@@ -123,14 +123,19 @@ const Home = () => {
               const bill = getLatestBillsByType(bills).find(b => b.type === type);
               if (!bill) return null;
               return (
-                <div key={idx} className={`rounded-xl shadow p-5 flex flex-col items-start ${darkMode ? 'bg-gray-800' : bill.type === 'water' ? 'bg-blue-200' : bill.type === 'gas' ? 'bg-yellow-100' : bill.type === 'electricity' ? 'bg-indigo-100' : 'bg-gray-100'}`} style={{ minHeight: '120px' }}>
+                <a
+                  key={idx}
+                  href={`/bills/${type}`}
+                  className={`rounded-xl shadow p-5 flex flex-col items-start cursor-pointer transition hover:scale-105 ${darkMode ? 'bg-gray-800' : bill.type === 'water' ? 'bg-blue-200' : bill.type === 'gas' ? 'bg-yellow-100' : bill.type === 'electricity' ? 'bg-indigo-100' : 'bg-gray-100'}`}
+                  style={{ minHeight: '120px', textDecoration: 'none' }}
+                >
                   <span className={`material-icons mb-2 ${darkMode ? 'text-blue-300' : bill.type === 'water' ? 'text-blue-500' : bill.type === 'gas' ? 'text-yellow-600' : bill.type === 'electricity' ? 'bolt' : 'credit_card'}`}>
                     {bill.type === 'water' ? 'water_drop' : bill.type === 'gas' ? 'local_fire_department' : bill.type === 'electricity' ? 'bolt' : 'credit_card'}
                   </span>
                   <span className={`text-lg font-bold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{bill.type.charAt(0).toUpperCase() + bill.type.slice(1)}</span>
                   <span className={`text-xl font-bold mt-2 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>${bill.amount}</span>
                   <span className={`text-xs mt-1 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{bill.status}</span>
-                </div>
+                </a>
               );
             })
           )}
