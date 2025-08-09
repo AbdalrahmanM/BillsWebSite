@@ -5,6 +5,12 @@ import App from './App';
 import { FeatureFlagsProvider } from './featureFlags';
 import reportWebVitals from './reportWebVitals';
 
+// Ensure dark mode class is applied before React renders to avoid flash
+try {
+  const savedDark = localStorage.getItem('darkMode') === 'true';
+  document.documentElement.classList.toggle('bh-dark', savedDark);
+} catch {}
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );

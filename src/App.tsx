@@ -10,7 +10,25 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/home" element={<Home />} />
-        <Route path="/bills/:service" element={<React.Suspense fallback={<div>Loading...</div>}><BillsPageLazy /></React.Suspense>} />
+        <Route
+          path="/bills/:service"
+          element={
+            <React.Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center px-6">
+                  <div className="w-full max-w-md">
+                    <div className="bh-progress">
+                      <div className="bh-progress__bar" />
+                      <div className="bh-progress__bar--alt" />
+                    </div>
+                  </div>
+                </div>
+              }
+            >
+              <BillsPageLazy />
+            </React.Suspense>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

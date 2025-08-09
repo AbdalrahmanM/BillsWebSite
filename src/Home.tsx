@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -13,9 +13,24 @@ interface Bill {
 }
 
 const Home = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('darkMode') === 'true'; } catch { return false; }
+  });
   const [userName, setUserName] = useState("");
   const [bills, setBills] = useState<Bill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const firstLoadRef = useRef(true);
+
+  useEffect(() => {
+    // reflect the initial value immediately
+    document.documentElement.classList.toggle('bh-dark', darkMode);
+  }, []);
+
+  useEffect(() => {
+    // reflect dark mode to document and persist
+    localStorage.setItem("darkMode", String(darkMode));
+    document.documentElement.classList.toggle("bh-dark", darkMode);
+  }, [darkMode]);
 
   useEffect(() => {
     const phone = localStorage.getItem("userPhone");
@@ -25,6 +40,7 @@ const Home = () => {
     }
     let unsubscribe = false;
     const fetchUser = async () => {
+      if (firstLoadRef.current) setLoading(true);
       const q = query(collection(db, "Users"), where("phone", "==", phone));
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
@@ -48,6 +64,10 @@ const Home = () => {
           } as Bill;
         });
         if (!unsubscribe) setBills(billsArr);
+      }
+      if (firstLoadRef.current) {
+        setLoading(false);
+        firstLoadRef.current = false;
       }
     };
     fetchUser();
@@ -88,13 +108,24 @@ const Home = () => {
           <span className={`material-icons text-2xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>dashboard</span>
           <span className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>Billing Hub</span>
         </div>
-        <button className={`p-2 rounded-full transition ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-[#e3eaf6] hover:bg-[#d1d8e6]'}`} onClick={() => setDarkMode((prev) => !prev)}>
+  <button className={`p-2 rounded-full transition ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-[#e3eaf6] hover:bg-[#d1d8e6]'}`} onClick={() => setDarkMode((prev) => !prev)}>
           <span className={`material-icons text-xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>{darkMode ? 'light_mode' : 'dark_mode'}</span>
         </button>
       </header>
 
-      <section className="mx-auto w-full max-w-2xl mt-8">
-        <div className={`flex items-center gap-4 rounded-2xl shadow p-5 mb-5 ${darkMode ? 'bg-gray-800' : 'bg-white'}`} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+      <section className="mx-auto w-full max-w-2xl mt-8 p-2">
+  {loading ? (
+          <div className="flex items-center justify-center py-16" role="status" aria-label="Loading">
+            <div className="w-full max-w-md">
+              <div className="bh-progress">
+                <div className="bh-progress__bar" />
+                <div className="bh-progress__bar--alt" />
+              </div>
+            </div>
+          </div>
+        ) : (
+  <>
+  <div className={`flex items-center gap-4 rounded-2xl shadow p-5 mb-5 ${darkMode ? 'bg-gray-800' : 'bg-white'}`} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           <div className={`rounded-full w-14 h-14 flex items-center justify-center ${darkMode ? 'bg-gray-700' : 'bg-[#f7f6f2]'}`}>
             <span className={`material-icons text-3xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>person</span>
           </div>
@@ -105,7 +136,7 @@ const Home = () => {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden shadow mb-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" alt="Ads" className="w-full h-28 object-cover" />
+          <img src="/background/1.png" alt="Ads" className="w-full h-28 object-cover" />
           <div className={`absolute inset-0 flex items-center justify-between px-6 ${darkMode ? 'bg-black/60' : 'bg-black/30'}`}>
             <span className="text-white text-2xl font-bold">Ads</span>
             <button className={`rounded-full p-2 ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white/70 hover:bg-white'}`}>
@@ -114,7 +145,7 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
+  <div className="grid grid-cols-2 gap-4 mb-8">
           {getLatestBillsByType(bills).length === 0 ? (
             <div className="col-span-2 text-center text-gray-500">No bills found.</div>
           ) : (
@@ -140,6 +171,8 @@ const Home = () => {
             })
           )}
         </div>
+  </>
+  )}
       </section>
 
       <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>

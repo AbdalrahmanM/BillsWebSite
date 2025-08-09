@@ -31,6 +31,55 @@ const serviceTheme: Record<
   fees: { color: "#10b981", light: "#d1fae5", icon: "credit_card" },
 };
 
+// Simple skeleton card shown while loading bills
+const SkeletonCard: React.FC = () => {
+  return (
+    <div
+      className="p-[2px] rounded-3xl"
+      style={{
+        background: "linear-gradient(135deg, #e5e7eb, #f3f4f6)",
+      }}
+      aria-busy="true"
+      aria-label="Loading bill"
+    >
+      <div className="rounded-3xl bg-white/70 backdrop-blur p-6 shadow-xl flex flex-col gap-4 min-h-[260px] animate-pulse">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-200" />
+            <div>
+              <div className="h-3 w-16 bg-gray-200 rounded mb-2" />
+              <div className="h-7 w-28 bg-gray-200 rounded" />
+            </div>
+          </div>
+          <div className="h-6 w-20 rounded-full bg-gray-200" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="h-9 rounded-xl bg-gray-200/80" />
+          <div className="h-9 rounded-xl bg-gray-200/80" />
+          <div className="h-9 rounded-xl bg-gray-200/80" />
+          <div className="h-9 rounded-xl bg-gray-200/80" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Top neon progress bar while fetching
+const TopProgressBar: React.FC<{ visible?: boolean }> = ({ visible = false }) => {
+  if (!visible) return null;
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 px-6 pt-3 pointer-events-none">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="bh-progress">
+          <div className="bh-progress__bar" />
+          <div className="bh-progress__bar--alt" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const BillsPage: React.FC = () => {
   const { service } = useParams<{ service: ServiceKey }>();
   const safeService: ServiceKey = (service as ServiceKey) || "water";
@@ -58,6 +107,15 @@ const BillsPage: React.FC = () => {
 
   const title = serviceNames[safeService];
   const theme = serviceTheme[safeService];
+  const [darkMode, setDarkMode] = useState<boolean>(() => localStorage.getItem("darkMode") === "true");
+
+  useEffect(() => {
+    const listener = () => setDarkMode(localStorage.getItem("darkMode") === "true");
+    window.addEventListener("storage", listener);
+    // also reflect class in case user lands directly here
+    document.documentElement.classList.toggle("bh-dark", localStorage.getItem("darkMode") === "true");
+    return () => window.removeEventListener("storage", listener);
+  }, []);
 
   // refs for outside click
   const monthRef = useRef<HTMLDivElement>(null);
@@ -215,17 +273,17 @@ const BillsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+  <div className="min-h-screen flex flex-col relative">
       {/* Blurred background */}
       <div
         className="absolute inset-0 -z-10 bg-cover bg-center"
         style={{ backgroundImage: "url('/background/login-bg.jpg')" }}
       >
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-lg" />
+        <div className={`absolute inset-0 ${darkMode ? 'bg-black/70 backdrop-blur-2xl' : 'bg-white/60 backdrop-blur-lg'}`} />
       </div>
 
       {/* Header */}
-      <header className="px-8 pt-6">
+      <header className={`px-8 pt-6 ${darkMode ? 'bg-gray-900/40' : ''}`}>
         <div className="mx-auto w-full max-w-5xl">
           <div
             className="relative overflow-hidden rounded-3xl shadow"
@@ -234,22 +292,22 @@ const BillsPage: React.FC = () => {
             <div
               className="absolute inset-0 opacity-70"
               style={{
-                background: `linear-gradient(90deg, ${theme.light} 0%, #ffffff 100%)`,
+                background: darkMode ? 'linear-gradient(90deg, rgba(31,41,55,0.9) 0%, rgba(17,24,39,0.9) 100%)' : `linear-gradient(90deg, ${theme.light} 0%, #ffffff 100%)`,
               }}
             />
             <div className="relative z-10 flex items-center justify-between p-6">
               <div className="flex items-center gap-4">
                 <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ background: theme.light }}
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-gray-800' : ''}`}
+                  style={{ background: darkMode ? undefined : theme.light }}
                 >
-                  <span className="material-icons" style={{ color: theme.color }}>
+                  <span className={`material-icons ${darkMode ? 'text-blue-300' : ''}`} style={{ color: darkMode ? undefined : theme.color }}>
                     {theme.icon}
                   </span>
                 </div>
                 <div>
-                  <div className="text-2xl font-extrabold text-gray-700">{title}</div>
-                  <div className="text-sm text-gray-500">
+                  <div className={`text-2xl font-extrabold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{title}</div>
+                  <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>
                     Overview of your {safeService} bills
                   </div>
                 </div>
@@ -260,9 +318,9 @@ const BillsPage: React.FC = () => {
       </header>
 
       {/* Content */}
-      <section className="mx-auto w-full max-w-5xl mt-8">
+    <section className="mx-auto w-full max-w-5xl mt-8">
         <div
-          className="rounded-2xl shadow p-6 bg-white/80"
+      className={`rounded-2xl shadow p-6 ${darkMode ? 'bg-gray-900/70' : 'bg-white/80'}`}
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
         >
           {/* Filters */}
@@ -272,7 +330,7 @@ const BillsPage: React.FC = () => {
               <div className="relative" ref={monthRef}>
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white shadow border border-gray-100 min-w-[120px] text-base font-semibold text-gray-700 hover:bg-blue-50 focus:outline-none"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl shadow border min-w-[120px] text-base font-semibold focus:outline-none ${darkMode ? 'bg-gray-800 border-gray-700 text-blue-200 hover:bg-gray-700' : 'bg-white border-gray-100 text-gray-700 hover:bg-blue-50'}`}
                   onClick={() => {
                     setMonthOpen((v) => !v);
                     setYearOpen(false);
@@ -280,18 +338,16 @@ const BillsPage: React.FC = () => {
                     setStatusOpen(false);
                   }}
                 >
-                  <span className="material-icons text-blue-400">calendar_month</span>
+                  <span className={`material-icons ${darkMode ? 'text-blue-300' : 'text-blue-400'}`}>calendar_month</span>
                   {selectedMonth
                     ? monthOptions.find((m) => m.num === selectedMonth)?.label
                     : "months"}
-                  <span className="material-icons text-gray-400 text-base">expand_more</span>
+                  <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {monthOpen && (
-                  <div className="absolute left-0 mt-2 w-full z-20 bg-white rounded-2xl shadow-lg border border-gray-100">
+                  <div className={`absolute left-0 mt-2 w-full z-20 rounded-2xl shadow-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                        selectedMonth === "" ? "bg-blue-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${selectedMonth === "" ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                       onClick={() => {
                         setSelectedMonth("");
                         setMonthOpen(false);
@@ -302,9 +358,7 @@ const BillsPage: React.FC = () => {
                     {monthOptions.map((m) => (
                       <button
                         key={m.num}
-                        className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                          selectedMonth === m.num ? "bg-blue-100" : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${selectedMonth === m.num ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                         onClick={() => {
                           setSelectedMonth(m.num);
                           setMonthOpen(false);
@@ -321,7 +375,7 @@ const BillsPage: React.FC = () => {
               <div className="relative" ref={yearRef}>
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white shadow border border-gray-100 min-w-[120px] text-base font-semibold text-gray-700 hover:bg-blue-50 focus:outline-none"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl shadow border min-w-[120px] text-base font-semibold focus:outline-none ${darkMode ? 'bg-gray-800 border-gray-700 text-blue-200 hover:bg-gray-700' : 'bg-white border-gray-100 text-gray-700 hover:bg-blue-50'}`}
                   onClick={() => {
                     setYearOpen((v) => !v);
                     setMonthOpen(false);
@@ -329,16 +383,14 @@ const BillsPage: React.FC = () => {
                     setStatusOpen(false);
                   }}
                 >
-                  <span className="material-icons text-blue-400">calendar_today</span>
+                  <span className={`material-icons ${darkMode ? 'text-blue-300' : 'text-blue-400'}`}>calendar_today</span>
                   {selectedYear ? selectedYear : "years"}
-                  <span className="material-icons text-gray-400 text-base">expand_more</span>
+                  <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {yearOpen && (
-                  <div className="absolute left-0 mt-2 w-full z-20 bg-white rounded-2xl shadow-lg border border-gray-100">
+                  <div className={`absolute left-0 mt-2 w-full z-20 rounded-2xl shadow-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                        selectedYear === "" ? "bg-blue-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${selectedYear === '' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                       onClick={() => {
                         setSelectedYear("");
                         setYearOpen(false);
@@ -351,9 +403,7 @@ const BillsPage: React.FC = () => {
                       .map((y) => (
                         <button
                           key={y}
-                          className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                            selectedYear === y ? "bg-blue-100" : ""
-                          }`}
+                          className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${selectedYear === y ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                           onClick={() => {
                             setSelectedYear(y);
                             setYearOpen(false);
@@ -372,7 +422,7 @@ const BillsPage: React.FC = () => {
                     setSelectedMonth("");
                     setSelectedYear("");
                   }}
-                  className="px-4 py-2 rounded-2xl bg-gray-200 text-base text-gray-700 font-semibold shadow hover:bg-gray-300"
+                  className={`px-4 py-2 rounded-2xl text-base font-semibold shadow ${darkMode ? 'bg-gray-700 text-blue-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                 >
                   Clear
                 </button>
@@ -384,7 +434,7 @@ const BillsPage: React.FC = () => {
               <div className="relative" ref={sortRef}>
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white shadow border border-gray-200 min-w-[160px] text-base font-semibold text-gray-700 hover:bg-blue-50 focus:outline-none"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl shadow border min-w-[160px] text-base font-semibold focus:outline-none ${darkMode ? 'bg-gray-800 border-gray-700 text-blue-200 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-blue-50'}`}
                   onClick={() => {
                     setSortOpen((v) => !v);
                     setMonthOpen(false);
@@ -392,19 +442,17 @@ const BillsPage: React.FC = () => {
                     setStatusOpen(false);
                   }}
                 >
-                  <span className="material-icons text-blue-400">sort</span>
+                  <span className={`material-icons ${darkMode ? 'text-blue-300' : 'text-blue-400'}`}>sort</span>
                   {sortBy === "newest" && "Newest"}
                   {sortBy === "oldest" && "Oldest"}
                   {sortBy === "amountHigh" && "Amount: High → Low"}
                   {sortBy === "amountLow" && "Amount: Low → High"}
-                  <span className="material-icons text-gray-400 text-base">expand_more</span>
+                  <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {sortOpen && (
-                  <div className="absolute left-0 mt-2 w-full z-20 bg-white rounded-2xl shadow-lg border border-gray-200">
+                  <div className={`absolute left-0 mt-2 w-full z-20 rounded-2xl shadow-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                        sortBy === "newest" ? "bg-blue-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'newest' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                       onClick={() => {
                         setSortBy("newest");
                         setSortOpen(false);
@@ -413,9 +461,7 @@ const BillsPage: React.FC = () => {
                       Newest
                     </button>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                        sortBy === "oldest" ? "bg-blue-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'oldest' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                       onClick={() => {
                         setSortBy("oldest");
                         setSortOpen(false);
@@ -424,9 +470,7 @@ const BillsPage: React.FC = () => {
                       Oldest
                     </button>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                        sortBy === "amountHigh" ? "bg-blue-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'amountHigh' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                       onClick={() => {
                         setSortBy("amountHigh");
                         setSortOpen(false);
@@ -435,9 +479,7 @@ const BillsPage: React.FC = () => {
                       Amount: High → Low
                     </button>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-blue-50 text-gray-700 font-semibold ${
-                        sortBy === "amountLow" ? "bg-blue-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'amountLow' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
                       onClick={() => {
                         setSortBy("amountLow");
                         setSortOpen(false);
@@ -453,7 +495,7 @@ const BillsPage: React.FC = () => {
               <div className="relative" ref={statusRef}>
                 <button
                   type="button"
-                  className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white shadow border border-gray-200 min-w-[120px] text-base font-semibold text-gray-700 hover:bg-green-50 focus:outline-none"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl shadow border min-w-[120px] text-base font-semibold focus:outline-none ${darkMode ? 'bg-gray-800 border-gray-700 text-blue-200 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-700 hover:bg-green-50'}`}
                   onClick={() => {
                     setStatusOpen((v) => !v);
                     setMonthOpen(false);
@@ -461,18 +503,16 @@ const BillsPage: React.FC = () => {
                     setSortOpen(false);
                   }}
                 >
-                  <span className="material-icons text-green-400">check_circle</span>
+                  <span className={`material-icons ${darkMode ? 'text-green-300' : 'text-green-400'}`}>check_circle</span>
                   {statusFilter === "all" && "All"}
                   {statusFilter === "paid" && "Paid"}
                   {statusFilter === "unpaid" && "Unpaid"}
-                  <span className="material-icons text-gray-400 text-base">expand_more</span>
+                  <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {statusOpen && (
-                  <div className="absolute left-0 mt-2 w-full z-20 bg-white rounded-2xl shadow-lg border border-gray-200">
+                  <div className={`absolute left-0 mt-2 w-full z-20 rounded-2xl shadow-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-green-50 text-gray-700 font-semibold ${
-                        statusFilter === "all" ? "bg-green-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-green-50'} ${statusFilter === 'all' ? (darkMode ? 'bg-gray-700' : 'bg-green-100') : ''}`}
                       onClick={() => {
                         setStatusFilter("all");
                         setStatusOpen(false);
@@ -481,9 +521,7 @@ const BillsPage: React.FC = () => {
                       All
                     </button>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-green-50 text-gray-700 font-semibold ${
-                        statusFilter === "paid" ? "bg-green-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-green-50'} ${statusFilter === 'paid' ? (darkMode ? 'bg-gray-700' : 'bg-green-100') : ''}`}
                       onClick={() => {
                         setStatusFilter("paid");
                         setStatusOpen(false);
@@ -492,9 +530,7 @@ const BillsPage: React.FC = () => {
                       Paid
                     </button>
                     <button
-                      className={`block w-full text-left px-4 py-2 rounded-2xl hover:bg-green-50 text-gray-700 font-semibold ${
-                        statusFilter === "unpaid" ? "bg-green-100" : ""
-                      }`}
+                      className={`block w-full text-left px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-green-50'} ${statusFilter === 'unpaid' ? (darkMode ? 'bg-gray-700' : 'bg-green-100') : ''}`}
                       onClick={() => {
                         setStatusFilter("unpaid");
                         setStatusOpen(false);
@@ -510,7 +546,14 @@ const BillsPage: React.FC = () => {
 
           {/* List */}
           {loading ? (
-            <div className="text-center text-gray-500 py-8">Loading bills...</div>
+            <div className="flex items-center justify-center py-16" role="status" aria-label="Loading">
+              <div className="w-full max-w-md">
+                <div className="bh-progress">
+                  <div className="bh-progress__bar" />
+                  <div className="bh-progress__bar--alt" />
+                </div>
+              </div>
+            </div>
           ) : filteredSorted.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               No bills found for this section.
@@ -534,15 +577,15 @@ const BillsPage: React.FC = () => {
                       setRequestStatus(null);
                     }}
                   >
-                    <div className="rounded-3xl bg-white/70 backdrop-blur p-6 shadow-xl flex flex-col gap-4 min-h-[260px]">
+                    <div className={`rounded-3xl backdrop-blur p-6 shadow-xl flex flex-col gap-4 min-h-[260px] ${darkMode ? 'bg-gray-900/60' : 'bg-white/70'}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <span className="material-icons" style={{ color: theme.color }}>
+                          <span className={`material-icons ${darkMode ? 'text-blue-300' : ''}`} style={{ color: darkMode ? undefined : theme.color }}>
                             {theme.icon}
                           </span>
                           <div>
-                            <div className="text-xs text-gray-500">Amount</div>
-                            <div className="text-3xl font-extrabold text-gray-800">
+                            <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>Amount</div>
+                            <div className={`text-3xl font-extrabold ${darkMode ? 'text-blue-100' : 'text-gray-800'}`}>
                               ${bill.amount}
                             </div>
                           </div>
@@ -557,16 +600,16 @@ const BillsPage: React.FC = () => {
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="px-3 py-2 rounded-xl bg-gray-100/70 text-gray-700 font-medium">
+                        <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
                           Bill: <span className="font-semibold break-all">{bill.billId}</span>
                         </div>
-                        <div className="px-3 py-2 rounded-xl bg-gray-100/70 text-gray-700 font-medium">
+                        <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
                           Date: <span className="font-semibold">{formatDate(bill.dueDate)}</span>
                         </div>
-                        <div className="px-3 py-2 rounded-xl bg-gray-100/70 text-gray-700 font-medium">
+                        <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
                           Year: <span className="font-semibold">{bill.year}</span>
                         </div>
-                        <div className="px-3 py-2 rounded-xl bg-gray-100/70 text-gray-700 font-medium">
+                        <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
                           Month: <span className="font-semibold">{bill.month}</span>
                         </div>
                       </div>
@@ -582,29 +625,29 @@ const BillsPage: React.FC = () => {
       {/* Modal */}
       {modalOpen && selectedBill && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full relative">
+          <div className={`rounded-3xl shadow-xl p-8 max-w-md w-full relative ${darkMode ? 'bg-gray-900 text-blue-200' : 'bg-white'}`}>
             <button
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"
+              className={`absolute top-4 right-4 ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-700'}`}
               onClick={() => setModalOpen(false)}
             >
               <span className="material-icons">close</span>
             </button>
 
             <div className="mb-4 flex items-center gap-3">
-              <span className="material-icons text-3xl" style={{ color: theme.color }}>
+              <span className={`material-icons text-3xl ${darkMode ? 'text-blue-300' : ''}`} style={{ color: darkMode ? undefined : theme.color }}>
                 {theme.icon}
               </span>
-              <span className="text-2xl font-bold">Bill Details</span>
+              <span className={`text-2xl font-bold ${darkMode ? 'text-blue-100' : ''}`}>Bill Details</span>
             </div>
 
-            <div className="mb-2 text-lg font-semibold text-gray-700">
+            <div className={`mb-2 text-lg font-semibold ${darkMode ? 'text-blue-100' : 'text-gray-700'}`}>
               Amount: ${selectedBill.amount}
             </div>
-            <div className="mb-2 text-gray-700">Bill ID: {selectedBill.billId}</div>
-            <div className="mb-2 text-gray-700">Date: {formatDate(selectedBill.dueDate)}</div>
-            <div className="mb-2 text-gray-700">Year: {selectedBill.year}</div>
-            <div className="mb-2 text-gray-700">Month: {selectedBill.month}</div>
-            <div className="mb-2 text-gray-700">
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>Bill ID: {selectedBill.billId}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>Date: {formatDate(selectedBill.dueDate)}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>Year: {selectedBill.year}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>Month: {selectedBill.month}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>
               Status:{" "}
               <span
                 className={
@@ -635,7 +678,7 @@ const BillsPage: React.FC = () => {
             </div>
 
             {requestStatus && (
-              <div className="mt-4 text-center font-semibold text-lg text-blue-600">
+              <div className={`mt-4 text-center font-semibold text-lg ${darkMode ? 'text-blue-300' : 'text-blue-600'}`}>
                 {requestStatus}
               </div>
             )}
@@ -645,15 +688,15 @@ const BillsPage: React.FC = () => {
 
       {/* Footer */}
       <footer
-        className="mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner"
-        style={{ background: "#f7f6f2" }}
+        className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`}
+        style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}
       >
-        <button className="flex items-center gap-2 text-[#7c7c7c] hover:text-blue-700">
+        <button className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-white' : 'text-[#7c7c7c] hover:text-blue-700'}`}>
           <span className="material-icons">support_agent</span>
           Support
         </button>
         <button
-          className="flex items-center gap-2 text-[#e74c3c] hover:text-red-800 font-bold"
+          className={`flex items-center gap-2 ${darkMode ? 'text-red-400 hover:text-red-200 font-bold' : 'text-[#e74c3c] hover:text-red-800 font-bold'}`}
           onClick={() => {
             localStorage.removeItem("userPhone");
             window.location.href = "/";
