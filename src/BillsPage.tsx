@@ -139,10 +139,12 @@ const BillsPage: React.FC = () => {
     const fetchBills = async () => {
       setLoading(true);
       try {
-        const phone = localStorage.getItem("userPhone");
+        const phone = localStorage.getItem("userPhone") || sessionStorage.getItem("userPhone");
         if (!phone) {
           setBills([]);
           setLoading(false);
+          // إذا لم يكن هناك جلسة، أعد المستخدم لشاشة الدخول
+          try { navigate('/'); } catch {}
           return;
         }
 
@@ -233,7 +235,7 @@ const BillsPage: React.FC = () => {
   const handleRequestBill = async (bill: Bill) => {
     setRequestStatus(null);
     try {
-      const phone = localStorage.getItem("userPhone");
+      const phone = localStorage.getItem("userPhone") || sessionStorage.getItem("userPhone");
       if (!phone) {
         setRequestStatus("User not found");
         return;
