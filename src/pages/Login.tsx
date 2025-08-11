@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "./firebase";
-import MotionToast, { Toast } from "./components/MotionToast";
-import HelpModal from './components/HelpModal';
+import { db } from "../firebase";
+import MotionToast, { Toast } from "../components/MotionToast";
+import HelpModal from '../components/HelpModal';
 
 // ...existing code...
 

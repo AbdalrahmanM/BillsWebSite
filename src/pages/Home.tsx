@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import useIdleLogout from "./hooks/useIdleLogout";
+import useIdleLogout from "../hooks/useIdleLogout";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
-import { db } from "./firebase";
-import HelpModal from './components/HelpModal';
+import { db } from "../firebase";
+import HelpModal from '../components/HelpModal';
 
 interface Bill {
   amount: number;

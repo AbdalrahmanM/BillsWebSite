@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { db } from "./firebase";
+import { db } from "../firebase";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
-import useIdleLogout from './hooks/useIdleLogout';
-import HelpModal from './components/HelpModal';
+import useIdleLogout from '../hooks/useIdleLogout';
+import HelpModal from '../components/HelpModal';
 
 type ServiceKey = "water" | "electricity" | "gas" | "fees";
 

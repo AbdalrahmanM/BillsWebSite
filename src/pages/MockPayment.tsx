@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, updateDoc, where, doc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../firebase';
 
 interface LocationState {
   billId: string;

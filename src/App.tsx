@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from './Login';
-import Home from './Home';
-import MockPayment from './MockPayment';
-const BillsPageLazy = React.lazy(() => import('./BillsPage'));
+import Login from './pages/Login';
+import Home from './pages/Home';
+import MockPayment from './pages/MockPayment';
+const BillsPageLazy = React.lazy(() => import('./pages/BillsPage'));
 
 function App() {
   return (
