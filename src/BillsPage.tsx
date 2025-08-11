@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { db } from "./firebase";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import useIdleLogout from './hooks/useIdleLogout';
+import HelpModal from './components/HelpModal';
 
 type ServiceKey = "water" | "electricity" | "gas" | "fees";
 
@@ -92,6 +93,7 @@ const BillsPage: React.FC = () => {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [requestStatus, setRequestStatus] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
   const [sortOpen, setSortOpen] = useState(false);
@@ -316,6 +318,16 @@ const BillsPage: React.FC = () => {
                     Overview of your {safeService} bills
                   </div>
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/home')}
+                  aria-label="Home"
+                  className={`rounded-xl p-2 shadow ${darkMode ? 'bg-gray-800 text-blue-200 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-100'}`}
+                >
+                  <span className="material-icons">home</span>
+                </button>
               </div>
             </div>
           </div>
@@ -698,7 +710,7 @@ const BillsPage: React.FC = () => {
         className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`}
         style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}
       >
-        <button className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-white' : 'text-[#7c7c7c] hover:text-blue-700'}`}>
+  <button onClick={() => setHelpOpen(true)} className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-white' : 'text-[#7c7c7c] hover:text-blue-700'}`}>
           <span className="material-icons">support_agent</span>
           Support
         </button>
@@ -717,8 +729,17 @@ const BillsPage: React.FC = () => {
           Logout
         </button>
       </footer>
+  {/* Support modal: show WhatsApp on authenticated pages */}
+  <HelpModal
+    open={helpOpen}
+    onClose={() => setHelpOpen(false)}
+    showWhatsApp
+    whatsappNumber={(localStorage.getItem('supportWhatsApp') || '9647700000000')}
+    whatsappMessage={`Hello, I need help with my ${safeService} bills. Bill: ${selectedBill?.billId || ''} | Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`}
+  />
     </div>
   );
 };
 
 export default BillsPage;
+

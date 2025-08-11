@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import MotionToast, { Toast } from "./components/MotionToast";
+import HelpModal from './components/HelpModal';
 
 // ...existing code...
 
@@ -18,6 +19,7 @@ const Login = () => {
 	const [error, setError] = useState("");
 	const [rememberMe, setRememberMe] = useState(false);
 	const [toasts, setToasts] = useState<Toast[]>([]);
+	const [helpOpen, setHelpOpen] = useState(false);
 	const navigate = useNavigate();
 
 	const pushToast = useCallback((type: Toast["type"], message: string) => {
@@ -61,7 +63,7 @@ const Login = () => {
 				</div>
 				<h1 className="text-3xl font-bold text-blue-800 mb-2 tracking-wide font-sans drop-shadow">Billing Hub</h1>
 				<p className="text-gray-700 mb-8 text-center text-base font-normal">Welcome back! Manage your bills and services easily.</p>
-				<button
+					<button
 					className="w-full py-3 bg-blue-700/80 text-white rounded-lg font-bold text-lg shadow-md hover:bg-blue-800/90 transition-all duration-200 mb-4 focus:ring-2 focus:ring-blue-400"
 					onClick={() => setShowLoginModal(true)}
 				>
@@ -162,8 +164,8 @@ const Login = () => {
 											<label htmlFor="remember" className="text-gray-700 text-sm">Remember me</label>
 										</div>
 										{error && <div className="text-red-500 text-sm text-center">{error}</div>}
-										<button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-full font-bold text-lg shadow-md hover:bg-blue-800 transition-all duration-200 mt-2">SIGN IN</button>
-										<a href="#" className="block text-center text-purple-600 mt-4 underline">Get help</a>
+											<button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-full font-bold text-lg shadow-md hover:bg-blue-800 transition-all duration-200 mt-2">SIGN IN</button>
+											<button type="button" onClick={() => setHelpOpen(true)} className="block mx-auto text-center text-purple-600 mt-4 underline">Get help</button>
 									</form>
 						<footer className="w-full text-left text-xs text-gray-500 mt-6">© 2025</footer>
 					</div>
@@ -182,8 +184,9 @@ const Login = () => {
 							About Us
 						</button>
 					</div>
-					<a href="#" className="text-purple-700 text-sm underline hover:text-purple-900 transition font-semibold">Get help</a>
+					<button onClick={() => setHelpOpen(true)} className="text-purple-700 text-sm underline hover:text-purple-900 transition font-semibold">Get help</button>
 				</div>
+				<HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
 				<footer className="w-full text-left text-xs text-gray-500 mt-8">© 2025</footer>
 			</div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import useIdleLogout from "./hooks/useIdleLogout";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
+import HelpModal from './components/HelpModal';
 
 interface Bill {
   amount: number;
@@ -21,6 +22,7 @@ const Home = () => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const firstLoadRef = useRef(true);
+  const [helpOpen, setHelpOpen] = useState(false);
   useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
 
   useEffect(() => {
@@ -178,7 +180,7 @@ const Home = () => {
       </section>
 
       <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
-        <button className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-white' : 'text-[#7c7c7c] hover:text-blue-700'}`}>
+        <button onClick={() => setHelpOpen(true)} className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-white' : 'text-[#7c7c7c] hover:text-blue-700'}`}>
           <span className="material-icons">support_agent</span>
           Support
         </button>
@@ -194,6 +196,14 @@ const Home = () => {
           Logout
         </button>
       </footer>
+      {/* Support modal: show WhatsApp on authenticated pages */}
+      <HelpModal
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        showWhatsApp
+        whatsappNumber={(localStorage.getItem('supportWhatsApp') || '9647700000000')}
+        whatsappMessage={`Hello, I need help with my account. User: ${userName || 'User'} | Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`}
+      />
     </div>
   );
 };
