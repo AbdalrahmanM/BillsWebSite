@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "./firebase";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import useIdleLogout from './hooks/useIdleLogout';
 
 type ServiceKey = "water" | "electricity" | "gas" | "fees";
 
@@ -91,6 +92,7 @@ const BillsPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [requestStatus, setRequestStatus] = useState<string | null>(null);
 
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
   const [sortOpen, setSortOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [monthOpen, setMonthOpen] = useState(false);
@@ -698,7 +700,11 @@ const BillsPage: React.FC = () => {
         <button
           className={`flex items-center gap-2 ${darkMode ? 'text-red-400 hover:text-red-200 font-bold' : 'text-[#e74c3c] hover:text-red-800 font-bold'}`}
           onClick={() => {
+            try {
+              sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: 'Logged out successfully' }));
+            } catch {}
             localStorage.removeItem("userPhone");
+            try { sessionStorage.removeItem("userPhone"); } catch {}
             window.location.href = "/";
           }}
         >

@@ -1,9 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
+import MotionToast, { Toast } from "./components/MotionToast";
 
 // ...existing code...
 
@@ -15,7 +16,39 @@ const Login = () => {
 	const [phone, setPhone] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
+	const [rememberMe, setRememberMe] = useState(false);
+	const [toasts, setToasts] = useState<Toast[]>([]);
 	const navigate = useNavigate();
+
+	const pushToast = useCallback((type: Toast["type"], message: string) => {
+		setToasts((prev) => [...prev, { id: Date.now() + Math.random(), type, message }]);
+	}, []);
+
+	const dismissToast = useCallback((id: number) => {
+		setToasts((prev) => prev.filter(t => t.id !== id));
+	}, []);
+
+	// Show flash toast after redirects (e.g., logout)
+	useEffect(() => {
+		try {
+			const raw = sessionStorage.getItem('flashToast');
+			if (raw) {
+				const parsed = JSON.parse(raw) as { type: Toast["type"]; message: string };
+				pushToast(parsed.type, parsed.message);
+				sessionStorage.removeItem('flashToast');
+			}
+		} catch {}
+	}, [pushToast]);
+
+	// Load remembered phone and preference
+	useEffect(() => {
+		try {
+			const savedPhone = localStorage.getItem('rememberPhone') || '';
+			const savedRemember = localStorage.getItem('rememberMe') === 'true';
+			if (savedPhone) setPhone(savedPhone);
+			setRememberMe(savedRemember);
+		} catch {}
+	}, []);
 
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center relative" style={{ backgroundImage: "url('/background/login-bg.jpg')" }}>
@@ -46,15 +79,25 @@ const Login = () => {
 						>
 							×
 						</button>
-									<form className="flex flex-col gap-6" onSubmit={async (e) => {
+									<form noValidate className="flex flex-col gap-6" onSubmit={async (e) => {
 										e.preventDefault();
 										setError("");
+										// تحقق الحقول قبل النداء على قاعدة البيانات
+										if (!phone.trim()) {
+											pushToast('warning', 'Please enter your phone number');
+											return;
+										}
+										if (!password) {
+											pushToast('warning', 'Please enter your password');
+											return;
+										}
 										try {
 											// البحث عن المستخدم برقم الهاتف
 											const q = query(collection(db, "Users"), where("phone", "==", phone));
 											const querySnapshot = await getDocs(q);
 											if (querySnapshot.empty) {
-												setError("رقم الهاتف غير مسجل.");
+												setError("Phone number is not registered.");
+												pushToast('error', 'Phone number is not registered');
 												return;
 											}
 											let found = false;
@@ -65,31 +108,57 @@ const Login = () => {
 												}
 											});
 											if (found) {
-												localStorage.setItem("userPhone", phone);
-												navigate("/Home");
+												// Persist login token-ish and remember preference/phone
+												localStorage.setItem('rememberMe', String(rememberMe));
+												if (rememberMe) {
+													localStorage.setItem('rememberPhone', phone);
+													localStorage.setItem("userPhone", phone);
+													try { sessionStorage.removeItem("userPhone"); } catch {}
+												} else {
+													try {
+														sessionStorage.setItem("userPhone", phone);
+														localStorage.removeItem("userPhone");
+														localStorage.removeItem('rememberPhone');
+													} catch {}
+												}
+												pushToast('success', 'Signed in successfully');
+												setShowLoginModal(false);
+												setTimeout(() => navigate("/home"), 900);
 											} else {
-												setError("كلمة المرور غير صحيحة.");
+												setError("Incorrect password.");
+												pushToast('error', 'Incorrect password');
 											}
 										} catch (err) {
-											setError("حدث خطأ أثناء تسجيل الدخول.");
+											setError("An error occurred while signing in.");
+											pushToast('error', 'An error occurred while signing in');
 										}
 									}}>
 										<div>
 											<label className="block text-gray-700 font-semibold mb-1">Phone Number</label>
 											<div className="flex items-center border-b border-gray-300 py-2">
 												<span className="material-icons text-gray-400 mr-2" style={{ fontSize: '22px' }}>call</span>
-												<input type="text" placeholder="Enter Phone Number" className="w-full outline-none bg-transparent" value={phone} onChange={e => setPhone(e.target.value)} required />
+												<input type="text" placeholder="Enter Phone Number" className="w-full outline-none bg-transparent" value={phone} onChange={e => setPhone(e.target.value)} />
 											</div>
 										</div>
 										<div>
 											<label className="block text-gray-700 font-semibold mb-1">Password</label>
 											<div className="flex items-center border-b border-gray-300 py-2">
 												<span className="material-icons text-gray-400 mr-2" style={{ fontSize: '22px' }}>lock</span>
-												<input type="password" placeholder="Enter Password" className="w-full outline-none bg-transparent" value={password} onChange={e => setPassword(e.target.value)} required />
+												<input type="password" placeholder="Enter Password" className="w-full outline-none bg-transparent" value={password} onChange={e => setPassword(e.target.value)} />
 											</div>
 										</div>
 										<div className="flex items-center gap-2">
-											<input type="checkbox" id="remember" className="accent-blue-600" />
+											<input
+												type="checkbox"
+												id="remember"
+												className="accent-blue-600"
+												checked={rememberMe}
+												onChange={(e) => {
+													const v = e.target.checked;
+													setRememberMe(v);
+													try { localStorage.setItem('rememberMe', String(v)); } catch {}
+												}}
+											/>
 											<label htmlFor="remember" className="text-gray-700 text-sm">Remember me</label>
 										</div>
 										{error && <div className="text-red-500 text-sm text-center">{error}</div>}
@@ -100,6 +169,9 @@ const Login = () => {
 					</div>
 				</div>
 			)}
+
+			{/* Toasts */}
+			<MotionToast toasts={toasts} onDismiss={dismissToast} />
 				<div className="flex justify-center gap-8 mb-8 w-full">
 					<div className="flex flex-col items-center">
 						<button

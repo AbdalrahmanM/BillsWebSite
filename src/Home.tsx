@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import useIdleLogout from "./hooks/useIdleLogout";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -20,6 +21,7 @@ const Home = () => {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const firstLoadRef = useRef(true);
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
 
   useEffect(() => {
     // reflect the initial value immediately
@@ -33,7 +35,7 @@ const Home = () => {
   }, [darkMode]);
 
   useEffect(() => {
-    const phone = localStorage.getItem("userPhone");
+  const phone = localStorage.getItem("userPhone") || sessionStorage.getItem("userPhone");
     if (!phone) {
       window.location.href = "/";
       return;
@@ -181,7 +183,11 @@ const Home = () => {
           Support
         </button>
         <button className={`flex items-center gap-2 ${darkMode ? 'text-red-400 hover:text-red-200 font-bold' : 'text-[#e74c3c] hover:text-red-800 font-bold'}`} onClick={() => {
+          try {
+            sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: 'Logged out successfully' }));
+          } catch {}
           localStorage.removeItem("userPhone");
+          try { sessionStorage.removeItem("userPhone"); } catch {}
           window.location.href = "/";
         }}>
           <span className="material-icons">logout</span>
