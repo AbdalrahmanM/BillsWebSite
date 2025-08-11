@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { db } from "./firebase";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import useIdleLogout from './hooks/useIdleLogout';
@@ -84,6 +84,7 @@ const TopProgressBar: React.FC<{ visible?: boolean }> = ({ visible = false }) =>
 const BillsPage: React.FC = () => {
   const { service } = useParams<{ service: ServiceKey }>();
   const safeService: ServiceKey = (service as ServiceKey) || "water";
+  const navigate = useNavigate();
 
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -664,9 +665,11 @@ const BillsPage: React.FC = () => {
 
             <div className="flex gap-4 mt-6">
               <button
-                className="px-5 py-2 rounded-xl bg-green-500 text-white font-bold shadow hover:bg-green-600"
+                disabled={selectedBill.status === 'paid'}
+                className={`px-5 py-2 rounded-xl text-white font-bold shadow ${selectedBill.status === 'paid' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
                 onClick={() => {
-                  /* TODO: integrate payment */
+                  if (selectedBill.status === 'paid') return;
+                  navigate('/pay', { state: { billId: selectedBill.billId, amount: selectedBill.amount, service: safeService } });
                 }}
               >
                 Pay

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './Login';
 import Home from './Home';
+import MockPayment from './MockPayment';
 const BillsPageLazy = React.lazy(() => import('./BillsPage'));
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
             </React.Suspense>
           }
         />
+  <Route path="/pay" element={<MockPayment />} />
       </Routes>
     </BrowserRouter>
   );
