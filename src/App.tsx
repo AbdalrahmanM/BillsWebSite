@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import MockPayment from './pages/MockPayment';
+import AdsPage from './pages/Ads';
 const BillsPageLazy = React.lazy(() => import('./pages/BillsPage'));
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           }
         />
   <Route path="/pay" element={<MockPayment />} />
+  <Route path="/ads" element={<AdsPage />} />
       </Routes>
     </BrowserRouter>
   );

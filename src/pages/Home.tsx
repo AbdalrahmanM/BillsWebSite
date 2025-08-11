@@ -139,15 +139,15 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden shadow mb-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <a href="/ads" className="block relative rounded-2xl overflow-hidden shadow mb-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           <img src="/background/1.png" alt="Ads" className="w-full h-28 object-cover" />
           <div className={`absolute inset-0 flex items-center justify-between px-6 ${darkMode ? 'bg-black/60' : 'bg-black/30'}`}>
             <span className="text-white text-2xl font-bold">Ads</span>
-            <button className={`rounded-full p-2 ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white/70 hover:bg-white'}`}>
+            <span className={`rounded-full p-2 ${darkMode ? 'bg-gray-800' : 'bg-white/70'}`}>
               <span className={`material-icons text-lg ${darkMode ? 'text-yellow-200' : 'text-[#7c7c7c]'}`}>chevron_right</span>
-            </button>
+            </span>
           </div>
-        </div>
+        </a>
 
   <div className="grid grid-cols-2 gap-4 mb-8">
           {getLatestBillsByType(bills).length === 0 ? (
