@@ -337,7 +337,7 @@ const BillsPage: React.FC = () => {
       </header>
 
       {/* Content */}
-    <section className="mx-auto w-full max-w-5xl mt-8">
+    <section className="mx-auto w-full max-w-5xl mt-8 mb-8">
         <div
       className={`rounded-2xl shadow p-6 ${darkMode ? 'bg-gray-900/70' : 'bg-white/80'}`}
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
