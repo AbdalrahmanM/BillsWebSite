@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global font family */
+@layer base {
+	html { font-family: 'Tajawal', theme('fontFamily.sans'); }
+}
+
 /* Billing Hub - Neon Progress Bar */
 :root {
 	--bh-c1: #60a5fa; /* blue-400 */
@@ -335,3 +340,5 @@
 .SupBtnExpand:hover .label,
 .SupBtnExpand:focus-visible .label { opacity:1; transform: translateX(0); max-width: 160px; width: auto; }
 .SupBtnExpand:active { transform: translateY(2px); }
+
+/* Removed legacy announcement button styles (moved to rotating banner) */

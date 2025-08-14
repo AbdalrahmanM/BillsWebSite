@@ -167,7 +167,10 @@ const Login = () => {
 											<button type="submit" className="w-full py-3 bg-blue-700 text-white rounded-full font-bold text-lg shadow-md hover:bg-blue-800 transition-all duration-200 mt-2">SIGN IN</button>
 											<button type="button" onClick={() => setHelpOpen(true)} className="block mx-auto text-center text-purple-600 mt-4 underline">Get help</button>
 									</form>
-						<footer className="w-full text-left text-xs text-gray-500 mt-6">© 2025</footer>
+						<footer className="w-full text-center text-[11px] text-gray-500 mt-6 opacity-90">
+							<div>© 2025 ForgeMind. All Rights Reserved.</div>
+							<div className="opacity-90">Designed by Abdalrahman & Mohammed</div>
+						</footer>
 					</div>
 				</div>
 			)}
@@ -187,7 +190,13 @@ const Login = () => {
 					<button onClick={() => setHelpOpen(true)} className="text-purple-700 text-sm underline hover:text-purple-900 transition font-semibold">Get help</button>
 				</div>
 				<HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
-				<footer className="w-full text-left text-xs text-gray-500 mt-8">© 2025</footer>
+				{/* Fixed bottom-center rights footer */}
+				<div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-10 select-none w-[76vw] max-w-[360px] sm:max-w-[400px]" aria-label="page-rights">
+					<div className="px-5 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/60 shadow-lg text-[11px] leading-tight text-gray-700 text-center w-full">
+						<div className="font-medium">© 2025 ForgeMind. All Rights Reserved.</div>
+						<div className="text-[10px] opacity-80">Designed by Abdalrahman & Mohammed</div>
+					</div>
+				</div>
 			</div>
 
 			{/* نافذة منبثقة عصرية لعرض About Us عند Hover مع زر إغلاق */}

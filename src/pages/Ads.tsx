@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HelpModal from '../components/HelpModal';
+import useIdleLogout from '../hooks/useIdleLogout';
 
 import imgMarket from '../assets/shooping.jpg';
 import imgPark from '../assets/park.png';
@@ -70,6 +71,9 @@ export default function AdsPage() {
   const [selected, setSelected] = useState<Ad | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Auto logout on inactivity (same behavior as Home)
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
 
   return (
     <div className="min-h-screen flex flex-col relative">

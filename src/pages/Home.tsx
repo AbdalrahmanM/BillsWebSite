@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import useIdleLogout from "../hooks/useIdleLogout";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
@@ -23,6 +23,49 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const firstLoadRef = useRef(true);
   const [helpOpen, setHelpOpen] = useState(false);
+  // Rotate banner between Ads and Announcement every 5s
+  const [bannerMode, setBannerMode] = useState<'ads' | 'announcement'>('ads');
+  // swipe & auto-rotate helpers
+  const swipeStartXRef = useRef<number | null>(null);
+  const isSwipingRef = useRef(false);
+  const rotateIntervalRef = useRef<number | null>(null);
+
+  const startAutoRotate = useCallback(() => {
+    if (rotateIntervalRef.current) {
+      window.clearInterval(rotateIntervalRef.current);
+    }
+    rotateIntervalRef.current = window.setInterval(() => {
+      setBannerMode((m) => (m === 'ads' ? 'announcement' : 'ads'));
+    }, 5000);
+  }, []);
+
+  const handlePointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    swipeStartXRef.current = e.clientX;
+    isSwipingRef.current = false;
+  };
+
+  const handlePointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (swipeStartXRef.current !== null) {
+      const delta = e.clientX - swipeStartXRef.current;
+      if (Math.abs(delta) > 10) isSwipingRef.current = true;
+    }
+  };
+
+  const handlePointerEnd: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    const start = swipeStartXRef.current;
+    if (start !== null) {
+      const delta = e.clientX - start;
+      if (Math.abs(delta) > 40) {
+        // Only two slides -> any direction toggles
+        setBannerMode((m) => (m === 'ads' ? 'announcement' : 'ads'));
+        // restart timer after manual interaction
+        startAutoRotate();
+      }
+    }
+    swipeStartXRef.current = null;
+    // Allow click again after the pointer ends
+    setTimeout(() => (isSwipingRef.current = false), 0);
+  };
   useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
 
   useEffect(() => {
@@ -35,6 +78,16 @@ const Home = () => {
     localStorage.setItem("darkMode", String(darkMode));
     document.documentElement.classList.toggle("bh-dark", darkMode);
   }, [darkMode]);
+
+  useEffect(() => {
+    // start auto-rotation and clean up on unmount
+    startAutoRotate();
+    return () => {
+      if (rotateIntervalRef.current) {
+        window.clearInterval(rotateIntervalRef.current);
+      }
+    };
+  }, [startAutoRotate]);
 
   useEffect(() => {
   const phone = localStorage.getItem("userPhone") || sessionStorage.getItem("userPhone");
@@ -112,9 +165,33 @@ const Home = () => {
           <span className={`material-icons text-2xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>dashboard</span>
           <span className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>Billing Hub</span>
         </div>
-  <button className={`p-2 rounded-full transition ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-[#e3eaf6] hover:bg-[#d1d8e6]'}`} onClick={() => setDarkMode((prev) => !prev)}>
-          <span className={`material-icons text-xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>{darkMode ? 'light_mode' : 'dark_mode'}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Toggle theme"
+            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-pressed={darkMode}
+            onClick={() => setDarkMode((prev) => !prev)}
+            className="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400"
+          >
+            <span className="relative inline-flex items-center justify-center">
+              {/* soft glow */}
+              <span aria-hidden className="absolute -inset-2 rounded-full bg-gradient-to-r from-indigo-400/40 via-sky-400/40 to-purple-400/40 blur-md opacity-60 group-hover:opacity-90 transition-opacity" />
+              {/* gradient ring */}
+              <span className="relative rounded-full p-[2px] bg-gradient-to-r from-indigo-400/70 via-sky-400/70 to-purple-400/70">
+                {/* glass body */}
+                <span className={`w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md shadow-md transition-colors ${darkMode ? 'bg-gray-900/70' : 'bg-white/70'}`}>
+                  <span className="relative inline-block w-5 h-5">
+                    {/* Sun icon */}
+                    <span className={`material-icons absolute inset-0 text-[18px] transition-all duration-300 ease-out ${darkMode ? 'opacity-100 scale-100 rotate-0 text-yellow-200' : 'opacity-0 scale-75 -rotate-90 text-yellow-300'}`}>light_mode</span>
+                    {/* Moon icon */}
+                    <span className={`material-icons absolute inset-0 text-[18px] transition-all duration-300 ease-out ${darkMode ? 'opacity-0 scale-75 rotate-90 text-slate-200' : 'opacity-100 scale-100 rotate-0 text-slate-700'}`}>dark_mode</span>
+                  </span>
+                </span>
+              </span>
+            </span>
+          </button>
+        </div>
       </header>
 
       <section className="mx-auto w-full max-w-2xl mt-8 p-2">
@@ -139,15 +216,65 @@ const Home = () => {
           </div>
         </div>
 
-        <a href="/ads" className="block relative rounded-2xl overflow-hidden shadow mb-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-          <img src="/background/1.png" alt="Ads" className="w-full h-28 object-cover" />
-          <div className={`absolute inset-0 flex items-center justify-between px-6 ${darkMode ? 'bg-black/60' : 'bg-black/30'}`}>
-            <span className="text-white text-2xl font-bold">Ads</span>
-            <span className={`rounded-full p-2 ${darkMode ? 'bg-gray-800' : 'bg-white/70'}`}>
-              <span className={`material-icons text-lg ${darkMode ? 'text-yellow-200' : 'text-[#7c7c7c]'}`}>chevron_right</span>
-            </span>
+        <div
+          className="relative"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerEnd}
+          onPointerCancel={handlePointerEnd}
+        >
+          <a
+            href={bannerMode === 'ads' ? '/ads' : '/announcement'}
+            className="block relative rounded-2xl overflow-hidden shadow mb-6 select-none"
+            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+            onClick={(e) => {
+              if (isSwipingRef.current) e.preventDefault();
+            }}
+          >
+            <img
+              src={bannerMode === 'ads' ? '/background/1.png' : '/background/1.jpg'}
+              alt={bannerMode === 'ads' ? 'Ads' : 'Announcement'}
+              className="w-full h-28 object-cover"
+              draggable={false}
+            />
+            <div className={`absolute inset-0 flex items-center justify-between px-6 ${darkMode ? 'bg-black/60' : 'bg-black/30'}`}>
+              <div className="flex flex-col">
+                <span className="text-white text-2xl font-extrabold">
+                  {bannerMode === 'ads' ? 'Ads' : 'Announcement'}
+                </span>
+                <span className="text-white/90 text-sm font-semibold tracking-wide">
+                  {bannerMode === 'ads' ? 'Check out our latest offers!' : 'Important Notice'}
+                </span>
+              </div>
+              <span className="relative group inline-flex items-center justify-center select-none">
+                {/* soft glow */}
+                <span aria-hidden className="absolute -inset-2 rounded-full bg-gradient-to-r from-indigo-400/40 via-sky-400/40 to-purple-400/40 blur-md opacity-60 group-hover:opacity-90 transition-opacity" />
+                {/* gradient ring */}
+                <span className="relative rounded-full p-[2px] bg-gradient-to-r from-indigo-400/70 via-sky-400/70 to-purple-400/70">
+                  {/* glass body */}
+                  <span className={`rounded-full w-9 h-9 flex items-center justify-center backdrop-blur-md shadow-md transition-transform duration-200 ease-out group-hover:translate-x-0.5 ${darkMode ? 'bg-gray-900/70' : 'bg-white/70'}`}>
+                    <span className={`material-icons text-base ${darkMode ? 'text-yellow-200' : 'text-slate-700'}`}>chevron_right</span>
+                  </span>
+                </span>
+              </span>
+            </div>
+          </a>
+          {/* Dots indicator & manual control */}
+          <div className="pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Show Ads"
+              onClick={() => { setBannerMode('ads'); startAutoRotate(); }}
+              className={`transition-all ${bannerMode === 'ads' ? 'w-4 h-2 rounded-full bg-white/90' : 'w-2 h-2 rounded-full bg-white/60'} shadow`}
+            />
+            <button
+              type="button"
+              aria-label="Show Announcement"
+              onClick={() => { setBannerMode('announcement'); startAutoRotate(); }}
+              className={`transition-all ${bannerMode === 'announcement' ? 'w-4 h-2 rounded-full bg-white/90' : 'w-2 h-2 rounded-full bg-white/60'} shadow`}
+            />
           </div>
-        </a>
+        </div>
 
   <div className="grid grid-cols-2 gap-4 mb-8">
           {getLatestBillsByType(bills).length === 0 ? (
@@ -179,7 +306,7 @@ const Home = () => {
   )}
       </section>
 
-      <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
+  <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner relative ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
         <button
           type="button"
           aria-label="Support"
