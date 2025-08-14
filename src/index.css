@@ -72,3 +72,266 @@
 	0% { transform: translateX(0); }
 	100% { transform: translateX(260%); }
 }
+
+/* From Uiverse.io by vinodjangid07 */ 
+.LogoutBtn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+	width: 44px; /* unify with Home/Support */
+	height: 44px; /* unify with Home/Support */
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition-duration: .3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+  background-color: rgb(255, 65, 65);
+}
+
+/* plus sign */
+.sign {
+  width: 100%;
+  transition-duration: .3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sign svg {
+	width: 22px; /* unify icon size */
+	height: 22px;
+}
+
+.sign svg path {
+  fill: white;
+}
+/* text */
+.text {
+  position: absolute;
+  right: 0%;
+  width: 0%;
+  opacity: 0;
+  color: white;
+	font-size: 14px; /* unify label size */
+  font-weight: 600;
+  transition-duration: .3s;
+}
+/* hover effect on button width */
+.LogoutBtn:hover {
+	width: 140px; /* unify expanded width */
+  border-radius: 40px;
+  transition-duration: .3s;
+}
+
+.LogoutBtn:hover .sign {
+  width: 30%;
+  transition-duration: .3s;
+  padding-left: 20px;
+}
+/* hover effect button's text */
+.LogoutBtn:hover .text {
+  opacity: 1;
+  width: 70%;
+  transition-duration: .3s;
+  padding-right: 10px;
+}
+/* button click effect*/
+.LogoutBtn:active {
+  transform: translate(2px ,2px);
+}
+
+/* Expandable Home button (proposal 1) */
+.HomeBtnExpand {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 0; /* no gap when collapsed so icon centers */
+	height: 44px;
+	width: 44px;
+	padding: 0; /* remove side padding when collapsed */
+	justify-content: center; /* center icon in the circle */
+	border: none;
+	border-radius: 9999px;
+	cursor: pointer;
+	background: linear-gradient(135deg,#ffffffaa,#f0f4ffdd);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	box-shadow: 0 4px 14px -4px rgba(0,0,0,.15);
+	transition: width .35s cubic-bezier(.65,.05,.36,1), background .3s, box-shadow .3s, transform .25s;
+	overflow: hidden;
+	font-weight: 600;
+	color:#374151;
+}
+.bh-dark .HomeBtnExpand {
+	background: linear-gradient(135deg,#1f2937dd,#111827ee);
+	color:#bfdbfe;
+	box-shadow: 0 4px 18px -4px rgba(0,0,0,.6);
+}
+.HomeBtnExpand .icon { font-size: 22px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.HomeBtnExpand .label {
+	opacity:0;
+	transform: translateX(-4px);
+	white-space:nowrap;
+	transition: opacity .25s .05s, transform .35s;
+	font-size: 14px;
+	max-width: 0; /* collapse label width when not expanded */
+	width: 0;
+	overflow: hidden;
+	margin: 0;
+}
+.HomeBtnExpand:hover,
+.HomeBtnExpand:focus-visible {
+	width: 140px; /* unify expanded width with Logout */
+	background: linear-gradient(135deg,#e0f2fe,#dbeafe);
+	padding: 0 14px; /* add padding when expanded */
+	justify-content: flex-start; /* place icon then label */
+	gap: 8px;
+	outline: none;
+}
+.bh-dark .HomeBtnExpand:hover,
+.bh-dark .HomeBtnExpand:focus-visible {
+	background: linear-gradient(135deg,#2563eb33,#7c3aed33);
+}
+.HomeBtnExpand:hover .label,
+.HomeBtnExpand:focus-visible .label { opacity:1; transform: translateX(0); max-width: 160px; width: auto; }
+.HomeBtnExpand:active { transform: translateY(2px); }
+
+/* Chat style Support button */
+.SupBtnChat {
+	position: relative;
+	width: 46px;
+	height: 46px;
+	border: none;
+	border-radius: 18px;
+	display: grid;
+	place-items: center;
+	background: rgba(255,255,255,.55);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	cursor: pointer;
+	color: #2563eb;
+	transition: transform .25s, box-shadow .3s, background .3s;
+	box-shadow: 0 4px 12px -4px rgba(0,0,0,.2);
+}
+.bh-dark .SupBtnChat {
+	background: rgba(31,41,55,.7);
+	color: #60a5fa;
+	box-shadow: 0 4px 14px -4px rgba(0,0,0,.6);
+}
+.SupBtnChat:hover, .SupBtnChat:focus-visible {
+	transform: translateY(-3px);
+	box-shadow: 0 6px 18px -6px rgba(0,0,0,.35);
+	outline: none;
+}
+.SupBtnChat:active { transform: translateY(0); }
+.SupBtnChat .ping {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 10px;
+	height: 10px;
+	background: #10b981;
+	border-radius: 50%;
+	box-shadow: 0 0 0 0 rgba(16,185,129,.6);
+	animation: sup-ping 1.8s infinite;
+}
+@keyframes sup-ping {
+	0% { transform: scale(.8); box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
+	70% { box-shadow: 0 0 0 10px rgba(16,185,129,0); }
+	100% { transform: scale(.8); box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+
+/* Gradient border glass Support button */
+.SupBtnBorder {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 18px;
+	border-radius: 9999px;
+	font-weight: 600;
+	border: 2px solid transparent;
+	background: linear-gradient(#ffffffcc,#ffffffcc) padding-box,
+						 conic-gradient(#60a5fa,#a78bfa,#22d3ee,#60a5fa) border-box;
+	color: #374151;
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	cursor: pointer;
+	transition: background .4s, color .3s, box-shadow .3s;
+	box-shadow: 0 4px 14px -4px rgba(0,0,0,.18);
+}
+.bh-dark .SupBtnBorder {
+	background: linear-gradient(#1f2937ee,#111827ee) padding-box,
+						 conic-gradient(#60a5fa,#a78bfa,#22d3ee,#60a5fa) border-box;
+	color: #bfdbfe;
+	box-shadow: 0 4px 18px -4px rgba(0,0,0,.6);
+}
+.SupBtnBorder:hover, .SupBtnBorder:focus-visible {
+	background: linear-gradient(#f0f9ff,#ecfdf5) padding-box,
+						 conic-gradient(#22d3ee,#60a5fa,#a78bfa,#22d3ee) border-box;
+	outline: none;
+	box-shadow: 0 6px 20px -6px rgba(0,0,0,.25);
+}
+.bh-dark .SupBtnBorder:hover, .bh-dark .SupBtnBorder:focus-visible {
+	background: linear-gradient(#1e3a8a66,#065f4655) padding-box,
+						 conic-gradient(#22d3ee,#60a5fa,#a78bfa,#22d3ee) border-box;
+}
+.SupBtnBorder:active { transform: translateY(2px); }
+
+/* Support expandable button (reuses style pattern of HomeBtnExpand) */
+.SupBtnExpand {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 0; /* no gap when collapsed so icon centers */
+	height: 44px;
+	width: 44px;
+	padding: 0; /* remove side padding when collapsed */
+	justify-content: center; /* center icon in the circle */
+	border: none;
+	border-radius: 9999px;
+	cursor: pointer;
+	background: linear-gradient(135deg,#ffffffb0,#f1f5f9d9);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	box-shadow: 0 4px 14px -4px rgba(0,0,0,.15);
+	transition: width .35s cubic-bezier(.65,.05,.36,1), background .3s, box-shadow .3s, transform .25s;
+	overflow: hidden;
+	font-weight: 600;
+	color:#374151;
+}
+.bh-dark .SupBtnExpand {
+	background: linear-gradient(135deg,#1f2937dd,#111827ee);
+	color:#bfdbfe;
+	box-shadow: 0 4px 18px -4px rgba(0,0,0,.6);
+}
+.SupBtnExpand .icon { font-size: 22px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.SupBtnExpand .label {
+	opacity:0;
+	transform: translateX(-4px);
+	white-space:nowrap;
+	transition: opacity .25s .05s, transform .35s;
+	font-size: 14px;
+	max-width: 0; /* collapse label width when not expanded */
+	width: 0;
+	overflow: hidden;
+	margin: 0;
+}
+.SupBtnExpand:hover,
+.SupBtnExpand:focus-visible {
+	width: 140px; /* unify expanded width with Logout/Home */
+	background: linear-gradient(135deg,#e0f2fe,#d1fae5);
+	padding: 0 14px; /* add padding when expanded */
+	justify-content: flex-start; /* place icon then label */
+	gap: 8px;
+	outline: none;
+}
+.bh-dark .SupBtnExpand:hover,
+.bh-dark .SupBtnExpand:focus-visible {
+	background: linear-gradient(135deg,#2563eb33,#10b98133);
+}
+.SupBtnExpand:hover .label,
+.SupBtnExpand:focus-visible .label { opacity:1; transform: translateX(0); max-width: 160px; width: auto; }
+.SupBtnExpand:active { transform: translateY(2px); }

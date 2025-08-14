@@ -107,13 +107,15 @@ export default function AdsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {/* Animated expandable Home button */}
                 <button
                   type="button"
                   onClick={() => navigate('/home')}
                   aria-label="Home"
-                  className={`rounded-xl p-2 shadow ${darkMode ? 'bg-gray-800 text-blue-200 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-100'}`}
+                  className="HomeBtnExpand"
                 >
-                  <span className="material-icons">home</span>
+                  <span className="icon material-icons" aria-hidden="true">home</span>
+                  <span className="label">Home</span>
                 </button>
               </div>
             </div>
@@ -142,20 +144,37 @@ export default function AdsPage() {
 
       {/* Footer: Support & Logout */}
       <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
-        <button onClick={() => setHelpOpen(true)} className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-white' : 'text-[#7c7c7c] hover:text-blue-700'}`}>
-          <span className="material-icons">support_agent</span>
-          Support
-        </button>
-        <button className={`flex items-center gap-2 ${darkMode ? 'text-red-400 hover:text-red-200 font-bold' : 'text-[#e74c3c] hover:text-red-800 font-bold'}`} onClick={() => {
-          try {
-            sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: 'Logged out successfully' }));
-          } catch {}
-          localStorage.removeItem('userPhone');
-          try { sessionStorage.removeItem('userPhone'); } catch {}
-          navigate('/');
-        }}>
-          <span className="material-icons">logout</span>
-          Logout
+        {/* Chat style support button */}
+          {/* Expandable support button (SupBtnExpand) */}
+          <button
+            type="button"
+            aria-label="Support"
+            onClick={() => setHelpOpen(true)}
+            className="SupBtnExpand"
+          >
+            <span className="icon material-icons" aria-hidden="true">support_agent</span>
+            <span className="label">Support</span>
+          </button>
+        {/* Custom animated logout button */}
+        <button
+          type="button"
+          aria-label="Logout"
+          className="LogoutBtn"
+          onClick={() => {
+            try {
+              sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: 'Logged out successfully' }));
+            } catch {}
+            localStorage.removeItem('userPhone');
+            try { sessionStorage.removeItem('userPhone'); } catch {}
+            navigate('/');
+          }}
+        >
+          <div className="sign">
+            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
+            </svg>
+          </div>
+          <div className="text">Logout</div>
         </button>
       </footer>
 
