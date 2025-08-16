@@ -195,13 +195,15 @@ const Login = () => {
 			</div>
 			</div>
 
-			{/* Footer أسفل الصفحة بدل الوضع الثابت */}
-			<footer className="relative z-10 w-full flex justify-center mb-6 px-4" aria-label="page-rights">
-				<div className="px-5 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/60 shadow-lg text-[11px] leading-tight text-gray-700 text-center w-[76vw] max-w-[360px] sm:max-w-[400px]">
-					<div className="font-medium">© 2025 ForgeMind. All Rights Reserved.</div>
-					<div className="text-[10px] opacity-80">Designed by Abdalrahman & Mohammed</div>
-				</div>
-			</footer>
+			{/* Footer أسفل الصفحة (مخفي عند فتح نافذة تسجيل الدخول) */}
+			{!showLoginModal && (
+				<footer className="relative z-10 w-full flex justify-center mb-6 px-4" aria-label="page-rights">
+					<div className="px-5 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/60 shadow-lg text-[11px] leading-tight text-gray-700 text-center w-[76vw] max-w-[360px] sm:max-w-[400px]">
+						<div className="font-medium">© 2025 ForgeMind. All Rights Reserved.</div>
+						<div className="text-[10px] opacity-80">Designed by Abdalrahman & Mohammed</div>
+					</div>
+				</footer>
+			)}
 
 			{/* نافذة منبثقة عصرية لعرض About Us عند Hover مع زر إغلاق */}
 			{showAbout && (
