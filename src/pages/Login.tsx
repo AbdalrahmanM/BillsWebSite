@@ -53,9 +53,11 @@ const Login = () => {
 	}, []);
 
 	return (
-		<div className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center relative" style={{ backgroundImage: "url('/background/login-bg.jpg')" }}>
+		<div className="min-h-screen flex flex-col bg-cover bg-center relative" style={{ backgroundImage: "url('/background/login-bg.jpg')" }}>
 			{/* طبقة زجاجية مع تدرج لوني */}
 			<div className="absolute inset-0 bg-gradient-to-br from-blue-200/40 via-white/30 to-blue-400/30 backdrop-blur-xl z-0" />
+			{/* منطقة المحتوى الأساسية في الوسط */}
+			<div className="relative z-10 flex-1 w-full flex items-center justify-center mb-4">
 			<div className="relative z-10 flex flex-col items-center w-full max-w-md px-10 py-14 rounded-3xl shadow-2xl bg-white/30 border border-blue-200 animate-fade-in-slow" style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}>
 				{/* صورة الشعار مستطيلة بحواف ناعمة وظل قوي وحجم أكبر جداً جداً */}
 				<div className="overflow-hidden rounded-2xl shadow-2xl mb-10 w-80 h-52 flex items-center justify-center bg-white ring-4 ring-blue-200 border border-blue-100">
@@ -190,14 +192,16 @@ const Login = () => {
 					<button onClick={() => setHelpOpen(true)} className="text-purple-700 text-sm underline hover:text-purple-900 transition font-semibold">Get help</button>
 				</div>
 				<HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
-				{/* Fixed bottom-center rights footer */}
-				<div className="fixed left-1/2 -translate-x-1/2 bottom-6 z-10 select-none w-[76vw] max-w-[360px] sm:max-w-[400px]" aria-label="page-rights">
-					<div className="px-5 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/60 shadow-lg text-[11px] leading-tight text-gray-700 text-center w-full">
-						<div className="font-medium">© 2025 ForgeMind. All Rights Reserved.</div>
-						<div className="text-[10px] opacity-80">Designed by Abdalrahman & Mohammed</div>
-					</div>
-				</div>
 			</div>
+			</div>
+
+			{/* Footer أسفل الصفحة بدل الوضع الثابت */}
+			<footer className="relative z-10 w-full flex justify-center mb-6 px-4" aria-label="page-rights">
+				<div className="px-5 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/60 shadow-lg text-[11px] leading-tight text-gray-700 text-center w-[76vw] max-w-[360px] sm:max-w-[400px]">
+					<div className="font-medium">© 2025 ForgeMind. All Rights Reserved.</div>
+					<div className="text-[10px] opacity-80">Designed by Abdalrahman & Mohammed</div>
+				</div>
+			</footer>
 
 			{/* نافذة منبثقة عصرية لعرض About Us عند Hover مع زر إغلاق */}
 			{showAbout && (
