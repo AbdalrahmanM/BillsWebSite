@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLanguage } from "../LanguageProvider";
 
 interface HelpModalProps {
   open: boolean;
@@ -58,6 +59,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
     };
   }, [darkModeProp]);
 
+  const { lang } = useLanguage();
   if (!open) return null;
 
   const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -78,8 +80,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
         <div className="flex items-center justify-center mb-4">
           <span className={`material-icons text-5xl ${darkMode ? 'text-amber-200' : 'text-amber-700'}`}>headset_mic</span>
         </div>
-        <div className={`text-2xl font-bold text-center mb-2 ${darkMode ? 'text-blue-100' : 'text-gray-800'}`}>We're Here for You</div>
-        <div className={`text-center mb-6 ${darkMode ? 'text-blue-200' : 'text-gray-600'}`}>Our support team is here to assist you at any time.</div>
+  <div className={`text-2xl font-bold text-center mb-2 ${darkMode ? 'text-blue-100' : 'text-gray-800'}`}>{lang === 'ar' ? 'نحن هنا لمساعدتك' : "We're Here for You"}</div>
+  <div className={`text-center mb-6 ${darkMode ? 'text-blue-200' : 'text-gray-600'}`}>{lang === 'ar' ? 'فريق الدعم جاهز لمساعدتك في أي وقت.' : 'Our support team is here to assist you at any time.'}</div>
 
         <div className="flex flex-col gap-3">
           <a
@@ -88,7 +90,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
             onClick={onClose}
           >
             <span className="material-icons">mail</span>
-            Contact via Email
+            {lang === 'ar' ? 'التواصل عبر البريد' : 'Contact via Email'}
           </a>
           {showWhatsApp && waHref && (
             <a
@@ -99,7 +101,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
               onClick={onClose}
             >
               <span className="material-icons">chat</span>
-              Contact via WhatsApp
+              {lang === 'ar' ? 'التواصل عبر واتساب' : 'Contact via WhatsApp'}
             </a>
           )}
         </div>

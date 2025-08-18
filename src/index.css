@@ -82,7 +82,7 @@
 .LogoutBtn {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+	justify-content: center; /* center icon when collapsed */
 	width: 44px; /* unify with Home/Support */
 	height: 44px; /* unify with Home/Support */
   border: none;
@@ -95,13 +95,12 @@
   background-color: rgb(255, 65, 65);
 }
 
-/* plus sign */
+/* icon container */
 .sign {
-  width: 100%;
-  transition-duration: .3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+	transition-duration: .3s;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .sign svg {
@@ -113,39 +112,41 @@
   fill: white;
 }
 /* text */
-.text {
-  position: absolute;
-  right: 0%;
-  width: 0%;
-  opacity: 0;
-  color: white;
-	font-size: 14px; /* unify label size */
-  font-weight: 600;
-  transition-duration: .3s;
+.LogoutBtn .text {
+	opacity: 0;
+	transform: translateX(-4px);
+	white-space: nowrap;
+	transition: opacity .25s .05s, transform .35s;
+	font-size: 14px;
+	max-width: 0; /* collapse label width when not expanded */
+	width: 0;
+	overflow: hidden;
+	margin: 0;
+	color: #fff;
 }
 /* hover effect on button width */
 .LogoutBtn:hover {
-	width: 140px; /* unify expanded width */
+	width: 160px; /* unify expanded width with Support/Home and fit Arabic label */
   border-radius: 40px;
   transition-duration: .3s;
 }
 
-.LogoutBtn:hover .sign {
-  width: 30%;
-  transition-duration: .3s;
-  padding-left: 20px;
+.LogoutBtn:hover,
+.LogoutBtn:focus-visible {
+	padding: 0 14px; /* add padding when expanded */
+	justify-content: flex-start; /* place icon then label */
+	gap: 8px;
+	outline: none;
 }
-/* hover effect button's text */
-.LogoutBtn:hover .text {
-  opacity: 1;
-  width: 70%;
-  transition-duration: .3s;
-  padding-right: 10px;
-}
+.LogoutBtn:hover .text,
+.LogoutBtn:focus-visible .text { opacity:1; transform: translateX(0); max-width: 160px; width: auto; }
 /* button click effect*/
 .LogoutBtn:active {
   transform: translate(2px ,2px);
 }
+
+/* RTL variant: show text first then icon (icon on the right) */
+.LogoutBtn.rtl { direction: rtl; flex-direction: row-reverse; }
 
 /* Expandable Home button (proposal 1) */
 .HomeBtnExpand {
@@ -188,7 +189,7 @@
 }
 .HomeBtnExpand:hover,
 .HomeBtnExpand:focus-visible {
-	width: 140px; /* unify expanded width with Logout */
+	width: 160px; /* unify expanded width with Logout */
 	background: linear-gradient(135deg,#e0f2fe,#dbeafe);
 	padding: 0 14px; /* add padding when expanded */
 	justify-content: flex-start; /* place icon then label */
@@ -202,6 +203,11 @@
 .HomeBtnExpand:hover .label,
 .HomeBtnExpand:focus-visible .label { opacity:1; transform: translateX(0); max-width: 160px; width: auto; }
 .HomeBtnExpand:active { transform: translateY(2px); }
+
+/* RTL variant for Home expandable button */
+.HomeBtnExpand.rtl { direction: rtl; flex-direction: row-reverse; }
+.HomeBtnExpand.rtl:hover,
+.HomeBtnExpand.rtl:focus-visible { justify-content: center; }
 
 /* Chat style Support button */
 .SupBtnChat {
@@ -326,10 +332,10 @@
 }
 .SupBtnExpand:hover,
 .SupBtnExpand:focus-visible {
-	width: 140px; /* unify expanded width with Logout/Home */
+	width: 160px; /* unify expanded width with Logout/Home */
 	background: linear-gradient(135deg,#e0f2fe,#d1fae5);
 	padding: 0 14px; /* add padding when expanded */
-	justify-content: flex-start; /* place icon then label */
+	justify-content: center; /* center icon + label to avoid extra right space */
 	gap: 8px;
 	outline: none;
 }
@@ -342,3 +348,6 @@
 .SupBtnExpand:active { transform: translateY(2px); }
 
 /* Removed legacy announcement button styles (moved to rotating banner) */
+
+/* RTL variant for support expandable button */
+.SupBtnExpand.rtl { direction: rtl; flex-direction: row-reverse; }

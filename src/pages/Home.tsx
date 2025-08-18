@@ -3,6 +3,8 @@ import useIdleLogout from "../hooks/useIdleLogout";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 import HelpModal from '../components/HelpModal';
+import { MotionSwap } from "../components/MotionToast";
+import { useLanguage } from "../LanguageProvider";
 
 interface Bill {
   amount: number;
@@ -15,6 +17,7 @@ interface Bill {
 }
 
 const Home = () => {
+  const { lang } = useLanguage();
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     try { return localStorage.getItem('darkMode') === 'true'; } catch { return false; }
   });
@@ -66,7 +69,7 @@ const Home = () => {
     // Allow click again after the pointer ends
     setTimeout(() => (isSwipingRef.current = false), 0);
   };
-  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: 'You were logged out due to inactivity' });
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: lang === 'ar' ? 'تم تسجيل خروجك بسبب عدم النشاط' : 'You were logged out due to inactivity' });
 
   useEffect(() => {
     // reflect the initial value immediately
@@ -154,6 +157,20 @@ const Home = () => {
     return Object.values(latest);
   }
 
+  // i18n helpers for this page
+  const typeLabel = (type: string) => {
+    const mapEn: Record<string, string> = { water: 'Water', electricity: 'Electricity', gas: 'Gas', fees: 'Fees' };
+    const mapAr: Record<string, string> = { water: 'الماء', electricity: 'الكهرباء', gas: 'الغاز', fees: 'الرسوم' };
+    const key = String(type).toLowerCase();
+    return (lang === 'ar' ? mapAr[key] : mapEn[key]) || type;
+  };
+  const statusLabel = (status: string) => {
+    const s = String(status).toLowerCase();
+    if (lang === 'ar') return s === 'paid' ? 'مدفوع' : s === 'unpaid' ? 'غير مدفوع' : status;
+    return status;
+  };
+  const isAr = lang === 'ar';
+
   return (
     <div className="min-h-screen flex flex-col relative">
       <div className="absolute inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: "url('/background/login-bg.jpg')" }}>
@@ -163,13 +180,13 @@ const Home = () => {
       <header className={`flex items-center justify-between px-8 py-4 ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: 'linear-gradient(90deg, #e3eaf6 0%, #f7f6f2 100%)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
         <div className="flex items-center gap-3">
           <span className={`material-icons text-2xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>dashboard</span>
-          <span className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>Billing Hub</span>
+          <span className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>{isAr ? 'مركز الفواتير' : 'Billing Hub'}</span>
         </div>
         <div className="flex items-center gap-3">
           <button
             type="button"
             aria-label="Toggle theme"
-            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={darkMode ? (isAr ? 'التبديل إلى الوضع الفاتح' : 'Switch to light mode') : (isAr ? 'التبديل إلى الوضع الداكن' : 'Switch to dark mode')}
             aria-pressed={darkMode}
             onClick={() => setDarkMode((prev) => !prev)}
             className="relative group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400"
@@ -196,7 +213,7 @@ const Home = () => {
 
       <section className="mx-auto w-full max-w-2xl mt-8 p-2">
   {loading ? (
-          <div className="flex items-center justify-center py-16" role="status" aria-label="Loading">
+          <div className="flex items-center justify-center py-16" role="status" aria-label={isAr ? 'جاري التحميل' : 'Loading'}>
             <div className="w-full max-w-md">
               <div className="bh-progress">
                 <div className="bh-progress__bar" />
@@ -211,8 +228,8 @@ const Home = () => {
             <span className={`material-icons text-3xl ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>person</span>
           </div>
           <div>
-            <h2 className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>Hello, {userName || "User"}</h2>
-            <p className={`text-sm ${darkMode ? 'text-blue-400' : 'text-[#b1b1b1]'}`}>Welcome back!</p>
+            <h2 className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-[#7c7c7c]'}`}>{isAr ? `مرحباً، ${userName || 'مستخدم'}` : `Hello, ${userName || 'User'}`}</h2>
+            <p className={`text-sm ${darkMode ? 'text-blue-400' : 'text-[#b1b1b1]'}`}>{isAr ? 'مرحباً بعودتك!' : 'Welcome back!'}</p>
           </div>
         </div>
 
@@ -233,17 +250,17 @@ const Home = () => {
           >
             <img
               src={bannerMode === 'ads' ? '/background/1.png' : '/background/1.jpg'}
-              alt={bannerMode === 'ads' ? 'Ads' : 'Announcement'}
+              alt={bannerMode === 'ads' ? (isAr ? 'إعلانات' : 'Ads') : (isAr ? 'إشعار' : 'Announcement')}
               className="w-full h-28 object-cover"
               draggable={false}
             />
             <div className={`absolute inset-0 flex items-center justify-between px-6 ${darkMode ? 'bg-black/60' : 'bg-black/30'}`}>
               <div className="flex flex-col">
                 <span className="text-white text-2xl font-extrabold">
-                  {bannerMode === 'ads' ? 'Ads' : 'Announcement'}
+                  {bannerMode === 'ads' ? (isAr ? 'إعلانات' : 'Ads') : (isAr ? 'إشعار' : 'Announcement')}
                 </span>
                 <span className="text-white/90 text-sm font-semibold tracking-wide">
-                  {bannerMode === 'ads' ? 'Check out our latest offers!' : 'Important Notice'}
+                  {bannerMode === 'ads' ? (isAr ? 'اطّلع على أحدث عروضنا!' : 'Check out our latest offers!') : (isAr ? 'تنبيه هام' : 'Important Notice')}
                 </span>
               </div>
               <span className="relative group inline-flex items-center justify-center select-none">
@@ -252,24 +269,24 @@ const Home = () => {
                 {/* gradient ring */}
                 <span className="relative rounded-full p-[2px] bg-gradient-to-r from-indigo-400/70 via-sky-400/70 to-purple-400/70">
                   {/* glass body */}
-                  <span className={`rounded-full w-9 h-9 flex items-center justify-center backdrop-blur-md shadow-md transition-transform duration-200 ease-out group-hover:translate-x-0.5 ${darkMode ? 'bg-gray-900/70' : 'bg-white/70'}`}>
-                    <span className={`material-icons text-base ${darkMode ? 'text-yellow-200' : 'text-slate-700'}`}>chevron_right</span>
+                  <span className={`rounded-full w-9 h-9 flex items-center justify-center backdrop-blur-md shadow-md transition-transform duration-200 ease-out ${isAr ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'} ${darkMode ? 'bg-gray-900/70' : 'bg-white/70'}`}>
+                    <span className={`material-icons text-base ${darkMode ? 'text-yellow-200' : 'text-slate-700'}`}>{isAr ? 'chevron_left' : 'chevron_right'}</span>
                   </span>
                 </span>
               </span>
             </div>
           </a>
           {/* Dots indicator & manual control */}
-          <div className="pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
+      <div className="pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
             <button
               type="button"
-              aria-label="Show Ads"
+        aria-label={isAr ? 'عرض الإعلانات' : 'Show Ads'}
               onClick={() => { setBannerMode('ads'); startAutoRotate(); }}
               className={`transition-all ${bannerMode === 'ads' ? 'w-4 h-2 rounded-full bg-white/90' : 'w-2 h-2 rounded-full bg-white/60'} shadow`}
             />
             <button
               type="button"
-              aria-label="Show Announcement"
+        aria-label={isAr ? 'عرض الإشعار' : 'Show Announcement'}
               onClick={() => { setBannerMode('announcement'); startAutoRotate(); }}
               className={`transition-all ${bannerMode === 'announcement' ? 'w-4 h-2 rounded-full bg-white/90' : 'w-2 h-2 rounded-full bg-white/60'} shadow`}
             />
@@ -278,7 +295,7 @@ const Home = () => {
 
   <div className="grid grid-cols-2 gap-4 mb-8">
           {getLatestBillsByType(bills).length === 0 ? (
-            <div className="col-span-2 text-center text-gray-500">No bills found.</div>
+            <div className="col-span-2 text-center text-gray-500">{isAr ? 'لا توجد فواتير.' : 'No bills found.'}</div>
           ) : (
             // ترتيب البطاقات حسب الأنواع المطلوبة
             ["water", "electricity", "gas", "fees"].map((type, idx) => {
@@ -294,9 +311,9 @@ const Home = () => {
                   <span className={`material-icons mb-2 ${darkMode ? 'text-blue-300' : bill.type === 'water' ? 'text-blue-500' : bill.type === 'gas' ? 'text-yellow-600' : bill.type === 'electricity' ? 'bolt' : 'credit_card'}`}>
                     {bill.type === 'water' ? 'water_drop' : bill.type === 'gas' ? 'local_fire_department' : bill.type === 'electricity' ? 'bolt' : 'credit_card'}
                   </span>
-                  <span className={`text-lg font-bold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{bill.type.charAt(0).toUpperCase() + bill.type.slice(1)}</span>
+                  <span className={`text-lg font-bold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{typeLabel(bill.type)}</span>
                   <span className={`text-xl font-bold mt-2 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>${bill.amount}</span>
-                  <span className={`text-xs mt-1 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{bill.status}</span>
+                  <span className={`text-xs mt-1 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{statusLabel(bill.status)}</span>
                 </a>
               );
             })
@@ -309,21 +326,21 @@ const Home = () => {
   <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner relative ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
         <button
           type="button"
-          aria-label="Support"
+          aria-label={lang === 'ar' ? 'الدعم' : 'Support'}
           onClick={() => setHelpOpen(true)}
-          className="SupBtnExpand"
+          className={`SupBtnExpand ${isAr ? 'rtl' : ''}`}
         >
           <span className="icon material-icons" aria-hidden="true">support_agent</span>
-          <span className="label">Support</span>
+          <span className="label"><MotionSwap switchKey={lang}>{lang === 'ar' ? 'الدعم' : 'Support'}</MotionSwap></span>
         </button>
         {/* Custom animated logout button */}
         <button
           type="button"
-          aria-label="Logout"
-          className="LogoutBtn"
+          aria-label={isAr ? 'تسجيل الخروج' : 'Logout'}
+          className={`LogoutBtn ${isAr ? 'rtl' : ''}`}
           onClick={() => {
             try {
-              sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: 'Logged out successfully' }));
+              sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: isAr ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully' }));
             } catch {}
             localStorage.removeItem("userPhone");
             try { sessionStorage.removeItem("userPhone"); } catch {}
@@ -335,7 +352,7 @@ const Home = () => {
               <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
             </svg>
           </div>
-          <div className="text">Logout</div>
+          <div className="text">{isAr ? 'تسجيل الخروج' : 'Logout'}</div>
         </button>
       </footer>
       {/* Support modal: show WhatsApp on authenticated pages */}
@@ -344,7 +361,7 @@ const Home = () => {
         onClose={() => setHelpOpen(false)}
         showWhatsApp
         whatsappNumber={(localStorage.getItem('supportWhatsApp') || '9647700000000')}
-        whatsappMessage={`Hello, I need help with my account. User: ${userName || 'User'} | Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`}
+        whatsappMessage={isAr ? `مرحباً، أحتاج مساعدة في حسابي. المستخدم: ${userName || 'مستخدم'} | الهاتف: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}` : `Hello, I need help with my account. User: ${userName || 'User'} | Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`}
       />
     </div>
   );

@@ -62,3 +62,44 @@ export const MotionToast: React.FC<MotionToastProps> = ({ toasts, onDismiss }) =
 };
 
 export default MotionToast;
+
+// --- Extras ---
+// Lightweight animated swap for text/content when a dependency changes (e.g., language).
+// Usage: <MotionSwap switchKey={lang}>{isAr ? '...' : '...'}</MotionSwap>
+export interface MotionSwapProps {
+  // Any value that changes when content should animate (language, route, etc.)
+  switchKey: unknown;
+  children: React.ReactNode;
+  // HTML tag to render as (span by default)
+  as?: keyof React.JSX.IntrinsicElements;
+  className?: string;
+  // Optional custom transitions
+  duration?: number;
+}
+
+export const MotionSwap: React.FC<MotionSwapProps> = ({
+  switchKey,
+  children,
+  as = 'span',
+  className,
+  duration = 0.25,
+}) => {
+  // Try to use motion[tag], fall back to motion.span
+  const Comp: any = (motion as any)[as] ?? motion.span;
+
+  return (
+    <AP mode="wait" initial={false}>
+      <Comp
+        key={String(typeof switchKey === 'object' ? JSON.stringify(switchKey) : switchKey)}
+        initial={{ opacity: 0, y: 4, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        exit={{ opacity: 0, y: -4, filter: 'blur(4px)' }}
+        transition={{ duration, ease: 'easeOut' }}
+        className={className}
+        style={{ display: 'inline-block' }}
+      >
+        {children}
+      </Comp>
+    </AP>
+  );
+};

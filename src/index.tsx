@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import { LanguageProvider } from './LanguageProvider';
 import { FeatureFlagsProvider } from './featureFlags';
 import reportWebVitals from './reportWebVitals';
 
@@ -17,7 +18,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <FeatureFlagsProvider>
-      <App />
+      <LanguageProvider>
+        <App />
+      </LanguageProvider>
     </FeatureFlagsProvider>
   </React.StrictMode>
 );
