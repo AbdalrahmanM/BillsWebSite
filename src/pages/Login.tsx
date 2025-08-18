@@ -177,8 +177,7 @@ const Login = () => {
 				</div>
 			)}
 
-			{/* Toasts */}
-			<MotionToast toasts={toasts} onDismiss={dismissToast} />
+			{/* Toasts moved outside this container to avoid being clipped by sibling stacking contexts */}
 				<div className="flex justify-center gap-8 mb-8 w-full">
 					<div className="flex flex-col items-center">
 						<button
@@ -227,6 +226,9 @@ const Login = () => {
 					</div>
 				</div>
 			)}
+
+			{/* Toasts placed at root level for highest stacking over footer and overlays */}
+			<MotionToast toasts={toasts} onDismiss={dismissToast} />
 		</div>
 	);
 };
