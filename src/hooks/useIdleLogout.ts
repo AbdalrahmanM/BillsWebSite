@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import i18n from '../i18n';
 
 interface Options {
   timeoutMs?: number;
@@ -10,7 +11,7 @@ interface Options {
 export function useIdleLogout({
   timeoutMs = 1 * 60 * 1000,
   enabled = true,
-  message = 'You were logged out due to inactivity',
+  message,
 }: Options = {}) {
   useEffect(() => {
     if (!enabled) return;
@@ -19,9 +20,10 @@ export function useIdleLogout({
 
     const schedule = () => {
       if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
+    const msg = message ?? i18n.t('home.idleLogoutMessage');
+    timer = setTimeout(() => {
         try {
-          sessionStorage.setItem('flashToast', JSON.stringify({ type: 'info', message }));
+      sessionStorage.setItem('flashToast', JSON.stringify({ type: 'info', message: msg }));
         } catch {}
         try { localStorage.removeItem('userPhone'); } catch {}
         try { sessionStorage.removeItem('userPhone'); } catch {}

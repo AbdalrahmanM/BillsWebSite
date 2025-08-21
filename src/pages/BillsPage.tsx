@@ -6,21 +6,10 @@ import useIdleLogout from '../hooks/useIdleLogout';
 import HelpModal from '../components/HelpModal';
 import { MotionSwap } from "../components/MotionToast";
 import { useLanguage } from "../LanguageProvider";
+import { useTranslation } from 'react-i18next';
 
 type ServiceKey = "water" | "electricity" | "gas" | "fees";
 
-const serviceNamesEn: Record<ServiceKey, string> = {
-  water: "Water Bills",
-  electricity: "Electricity Bills",
-  gas: "Gas Bills",
-  fees: "Fees",
-};
-const serviceNamesAr: Record<ServiceKey, string> = {
-  water: "فواتير الماء",
-  electricity: "فواتير الكهرباء",
-  gas: "فواتير الغاز",
-  fees: "الرسوم",
-};
 
 interface Bill {
   billId: string;
@@ -43,6 +32,7 @@ const serviceTheme: Record<
 
 // Simple skeleton card shown while loading bills
 const SkeletonCard: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div
       className="p-[2px] rounded-3xl"
@@ -50,7 +40,7 @@ const SkeletonCard: React.FC = () => {
         background: "linear-gradient(135deg, #e5e7eb, #f3f4f6)",
       }}
       aria-busy="true"
-      aria-label="Loading bill"
+      aria-label={t('bills.loadingBill')}
     >
       <div className="rounded-3xl bg-white/70 backdrop-blur p-6 shadow-xl flex flex-col gap-4 min-h-[260px] animate-pulse">
         <div className="flex items-start justify-between gap-3">
@@ -95,6 +85,7 @@ const BillsPage: React.FC = () => {
   const safeService: ServiceKey = (service as ServiceKey) || "water";
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { t, i18n } = useTranslation();
   const isAr = lang === 'ar';
 
   const [bills, setBills] = useState<Bill[]>([]);
@@ -105,7 +96,7 @@ const BillsPage: React.FC = () => {
   const [requestStatus, setRequestStatus] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
 
-  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: isAr ? 'تم تسجيل خروجك بسبب عدم النشاط' : 'You were logged out due to inactivity' });
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: t('home.idleLogoutMessage') });
   const [sortOpen, setSortOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [monthOpen, setMonthOpen] = useState(false);
@@ -120,7 +111,7 @@ const BillsPage: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<string>(""); // '' => all
   const [selectedYear, setSelectedYear] = useState<string>(""); // '' => all
 
-  const title = (isAr ? serviceNamesAr : serviceNamesEn)[safeService];
+  const title = t(`bills.services.${safeService}`);
   const theme = serviceTheme[safeService];
   const [darkMode, setDarkMode] = useState<boolean>(() => localStorage.getItem("darkMode") === "true");
 
@@ -138,16 +129,12 @@ const BillsPage: React.FC = () => {
   const sortRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
 
-  // Month options localized
+  // Month options localized via i18n map
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
     const num = String(i + 1).padStart(2, "0");
-    const ar = [
-      'يناير','فبراير','مارس','أبريل','مايو','يونيو',
-      'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'
-    ];
     return {
       num,
-      label: isAr ? ar[i] : new Date(2025, i, 1).toLocaleString("en", { month: "short" }),
+      label: t(`bills.monthsMap.${num}` as const),
     };
   });
 
@@ -253,14 +240,14 @@ const BillsPage: React.FC = () => {
     try {
       const phone = localStorage.getItem("userPhone") || sessionStorage.getItem("userPhone");
       if (!phone) {
-        setRequestStatus(isAr ? "المستخدم غير موجود" : "User not found");
+  setRequestStatus(t('bills.messages.userNotFound'));
         return;
       }
 
       const userQueryRef = query(collection(db, "Users"), where("phone", "==", phone));
       const userSnap = await getDocs(userQueryRef);
       if (userSnap.empty) {
-        setRequestStatus(isAr ? "المستخدم غير موجود" : "User not found");
+        setRequestStatus(t('bills.messages.userNotFound'));
         return;
       }
       const userId = userSnap.docs[0].id;
@@ -274,7 +261,7 @@ const BillsPage: React.FC = () => {
       );
       const reqSnap = await getDocs(reqQuery);
       if (!reqSnap.empty) {
-        setRequestStatus(isAr ? "لقد قمت بطلب هذه الفاتورة مسبقاً." : "You have already requested this bill.");
+        setRequestStatus(t('bills.messages.alreadyRequested'));
         return;
       }
 
@@ -287,9 +274,9 @@ const BillsPage: React.FC = () => {
         timestamp: new Date(),
       });
 
-  setRequestStatus(isAr ? "تم إرسال طلب الفاتورة بنجاح!" : "Bill request sent successfully!");
+  setRequestStatus(t('bills.messages.requestSuccess'));
     } catch (e) {
-  setRequestStatus(isAr ? "حدث خطأ ما. حاول مرة أخرى." : "Something went wrong. Try again.");
+  setRequestStatus(t('bills.messages.requestError'));
     }
   };
 
@@ -328,9 +315,7 @@ const BillsPage: React.FC = () => {
                 </div>
                 <div>
                   <div className={`text-2xl font-extrabold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{title}</div>
-                  <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>
-                    {isAr ? `نظرة عامة على فواتير ${serviceNamesAr[safeService]}` : `Overview of your ${safeService} bills`}
-                  </div>
+                  <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>{t('bills.overview', { service: t(`home.type.${safeService}`) })}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -338,11 +323,11 @@ const BillsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/home')}
-                  aria-label={isAr ? 'الرئيسية' : 'Home'}
+                  aria-label={t('common.home')}
                   className={`HomeBtnExpand ${isAr ? 'rtl' : ''}`}
                 >
                   <span className="icon material-icons" aria-hidden="true">home</span>
-                  <span className="label">{isAr ? 'الرئيسية' : 'Home'}</span>
+                  <span className="label">{t('common.home')}</span>
                 </button>
               </div>
             </div>
@@ -374,7 +359,7 @@ const BillsPage: React.FC = () => {
                   <span className={`material-icons ${darkMode ? 'text-blue-300' : 'text-blue-400'}`}>calendar_month</span>
           {selectedMonth
           ? monthOptions.find((m) => m.num === selectedMonth)?.label
-          : (isAr ? 'الأشهر' : 'months')}
+          : t('bills.filters.months')}
                   <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {monthOpen && (
@@ -389,7 +374,7 @@ const BillsPage: React.FC = () => {
                         setMonthOpen(false);
                       }}
                     >
-            {isAr ? 'كل الأشهر' : 'All months'}
+            {t('bills.filters.allMonths')}
                     </button>
                     {monthOptions.map((m) => (
                       <button
@@ -420,7 +405,7 @@ const BillsPage: React.FC = () => {
                   }}
                 >
                   <span className={`material-icons ${darkMode ? 'text-blue-300' : 'text-blue-400'}`}>calendar_today</span>
-          {selectedYear ? selectedYear : (isAr ? 'السنوات' : 'years')}
+          {selectedYear ? selectedYear : t('bills.filters.years')}
                   <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {yearOpen && (
@@ -435,7 +420,7 @@ const BillsPage: React.FC = () => {
                         setYearOpen(false);
                       }}
                     >
-            {isAr ? 'كل السنوات' : 'All years'}
+            {t('bills.filters.allYears')}
                     </button>
                     {Array.from(new Set(bills.map((b) => String(b.year))))
                       .sort((a, b) => Number(b) - Number(a))
@@ -455,7 +440,7 @@ const BillsPage: React.FC = () => {
                 )}
               </div>
 
-              {(selectedMonth || selectedYear) && (
+        {(selectedMonth || selectedYear) && (
                 <button
                   onClick={() => {
                     setSelectedMonth("");
@@ -463,7 +448,7 @@ const BillsPage: React.FC = () => {
                   }}
                   className={`px-4 py-2 rounded-2xl text-base font-semibold shadow ${darkMode ? 'bg-gray-700 text-blue-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                 >
-          {isAr ? 'مسح' : 'Clear'}
+      {t('bills.filters.clear')}
                 </button>
               )}
             </div>
@@ -482,10 +467,10 @@ const BillsPage: React.FC = () => {
                   }}
                 >
                   <span className={`material-icons ${darkMode ? 'text-blue-300' : 'text-blue-400'}`}>sort</span>
-          {sortBy === "newest" && (isAr ? 'الأحدث' : 'Newest')}
-          {sortBy === "oldest" && (isAr ? 'الأقدم' : 'Oldest')}
-          {sortBy === "amountHigh" && (isAr ? 'المبلغ: من الأعلى إلى الأقل' : 'Amount: High → Low')}
-          {sortBy === "amountLow" && (isAr ? 'المبلغ: من الأقل إلى الأعلى' : 'Amount: Low → High')}
+          {sortBy === "newest" && t('bills.filters.sort.newest')}
+          {sortBy === "oldest" && t('bills.filters.sort.oldest')}
+          {sortBy === "amountHigh" && t('bills.filters.sort.amountHigh')}
+          {sortBy === "amountLow" && t('bills.filters.sort.amountLow')}
                   <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {sortOpen && (
@@ -500,7 +485,7 @@ const BillsPage: React.FC = () => {
                         setSortOpen(false);
                       }}
                     >
-            {isAr ? 'الأحدث' : 'Newest'}
+            {t('bills.filters.sort.newest')}
                     </button>
                     <button
                       className={`block w-full ${isAr ? 'text-right' : 'text-left'} px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'oldest' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
@@ -509,7 +494,7 @@ const BillsPage: React.FC = () => {
                         setSortOpen(false);
                       }}
                     >
-            {isAr ? 'الأقدم' : 'Oldest'}
+            {t('bills.filters.sort.oldest')}
                     </button>
                     <button
                       className={`block w-full ${isAr ? 'text-right' : 'text-left'} px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'amountHigh' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
@@ -518,7 +503,7 @@ const BillsPage: React.FC = () => {
                         setSortOpen(false);
                       }}
                     >
-            {isAr ? 'المبلغ: من الأعلى إلى الأقل' : 'Amount: High → Low'}
+            {t('bills.filters.sort.amountHigh')}
                     </button>
                     <button
                       className={`block w-full ${isAr ? 'text-right' : 'text-left'} px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-blue-50'} ${sortBy === 'amountLow' ? (darkMode ? 'bg-gray-700' : 'bg-blue-100') : ''}`}
@@ -527,7 +512,7 @@ const BillsPage: React.FC = () => {
                         setSortOpen(false);
                       }}
                     >
-            {isAr ? 'المبلغ: من الأقل إلى الأعلى' : 'Amount: Low → High'}
+            {t('bills.filters.sort.amountLow')}
                     </button>
                   </div>
                 )}
@@ -546,9 +531,9 @@ const BillsPage: React.FC = () => {
                   }}
                 >
                   <span className={`material-icons ${darkMode ? 'text-green-300' : 'text-green-400'}`}>check_circle</span>
-          {statusFilter === "all" && (isAr ? 'الكل' : 'All')}
-          {statusFilter === "paid" && (isAr ? 'مدفوع' : 'Paid')}
-          {statusFilter === "unpaid" && (isAr ? 'غير مدفوع' : 'Unpaid')}
+          {statusFilter === "all" && t('common.all')}
+          {statusFilter === "paid" && t('home.status.paid')}
+          {statusFilter === "unpaid" && t('home.status.unpaid')}
                   <span className={`material-icons text-base ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>expand_more</span>
                 </button>
                 {statusOpen && (
@@ -563,7 +548,7 @@ const BillsPage: React.FC = () => {
                         setStatusOpen(false);
                       }}
                     >
-            {isAr ? 'الكل' : 'All'}
+            {t('common.all')}
                     </button>
                     <button
                       className={`block w-full ${isAr ? 'text-right' : 'text-left'} px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-green-50'} ${statusFilter === 'paid' ? (darkMode ? 'bg-gray-700' : 'bg-green-100') : ''}`}
@@ -572,7 +557,7 @@ const BillsPage: React.FC = () => {
                         setStatusOpen(false);
                       }}
                     >
-            {isAr ? 'مدفوع' : 'Paid'}
+            {t('home.status.paid')}
                     </button>
                     <button
                       className={`block w-full ${isAr ? 'text-right' : 'text-left'} px-4 py-2 rounded-2xl font-semibold ${darkMode ? 'text-blue-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-green-50'} ${statusFilter === 'unpaid' ? (darkMode ? 'bg-gray-700' : 'bg-green-100') : ''}`}
@@ -581,7 +566,7 @@ const BillsPage: React.FC = () => {
                         setStatusOpen(false);
                       }}
                     >
-            {isAr ? 'غير مدفوع' : 'Unpaid'}
+            {t('home.status.unpaid')}
                     </button>
                   </div>
                 )}
@@ -591,7 +576,7 @@ const BillsPage: React.FC = () => {
 
           {/* List */}
           {loading ? (
-            <div className="flex items-center justify-center py-16" role="status" aria-label={isAr ? 'جاري التحميل' : 'Loading'}>
+            <div className="flex items-center justify-center py-16" role="status" aria-label={t('home.loading')}>
               <div className="w-full max-w-md">
                 <div className="bh-progress">
                   <div className="bh-progress__bar" />
@@ -601,7 +586,7 @@ const BillsPage: React.FC = () => {
             </div>
           ) : filteredSorted.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
-              {isAr ? 'لا توجد فواتير ضمن هذا القسم.' : 'No bills found for this section.'}
+              {t('bills.emptySection')}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -629,7 +614,7 @@ const BillsPage: React.FC = () => {
                             {theme.icon}
                           </span>
                           <div>
-                            <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>{isAr ? 'المبلغ' : 'Amount'}</div>
+                            <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>{t('bills.labels.amount')}</div>
                             <div className={`text-3xl font-extrabold ${darkMode ? 'text-blue-100' : 'text-gray-800'}`}>
                               ${bill.amount}
                             </div>
@@ -640,22 +625,22 @@ const BillsPage: React.FC = () => {
                             isPaid ? "bg-green-500 text-white" : "bg-red-500 text-white"
                           }`}
                         >
-                          {isPaid ? (isAr ? 'مدفوع' : 'Paid') : (isAr ? 'غير مدفوع' : 'Unpaid')}
+                          {isPaid ? t('home.status.paid') : t('home.status.unpaid')}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
-                          {isAr ? 'الفاتورة:' : 'Bill:'} <span className="font-semibold break-all">{bill.billId}</span>
+                          {t('bills.labels.bill')}: <span className="font-semibold break-all">{bill.billId}</span>
                         </div>
                         <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
-                          {isAr ? 'التاريخ:' : 'Date:'} <span className="font-semibold">{formatDate(bill.dueDate)}</span>
+                          {t('bills.labels.date')}: <span className="font-semibold">{formatDate(bill.dueDate)}</span>
                         </div>
                         <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
-                          {isAr ? 'السنة:' : 'Year:'} <span className="font-semibold">{bill.year}</span>
+                          {t('bills.labels.year')}: <span className="font-semibold">{bill.year}</span>
                         </div>
                         <div className={`px-3 py-2 rounded-xl font-medium ${darkMode ? 'bg-gray-800/70 text-blue-200' : 'bg-gray-100/70 text-gray-700'}`}>
-                          {isAr ? 'الشهر:' : 'Month:'} <span className="font-semibold">{bill.month}</span>
+                          {t('bills.labels.month')}: <span className="font-semibold">{t(`bills.monthsMap.${String(bill.month).padStart(2, '0')}` as const)}</span>
                         </div>
                       </div>
                     </div>
@@ -682,18 +667,18 @@ const BillsPage: React.FC = () => {
               <span className={`material-icons text-3xl ${darkMode ? 'text-blue-300' : ''}`} style={{ color: darkMode ? undefined : theme.color }}>
                 {theme.icon}
               </span>
-              <span className={`text-2xl font-bold ${darkMode ? 'text-blue-100' : ''}`}>{isAr ? 'تفاصيل الفاتورة' : 'Bill Details'}</span>
+              <span className={`text-2xl font-bold ${darkMode ? 'text-blue-100' : ''}`}>{t('bills.detailsTitle')}</span>
             </div>
 
             <div className={`mb-2 text-lg font-semibold ${darkMode ? 'text-blue-100' : 'text-gray-700'}`}>
-              {isAr ? 'المبلغ:' : 'Amount:'} ${selectedBill.amount}
+              {t('bills.labels.amount')}: ${selectedBill.amount}
             </div>
-            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{isAr ? 'معرف الفاتورة:' : 'Bill ID:'} {selectedBill.billId}</div>
-            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{isAr ? 'التاريخ:' : 'Date:'} {formatDate(selectedBill.dueDate)}</div>
-            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{isAr ? 'السنة:' : 'Year:'} {selectedBill.year}</div>
-            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{isAr ? 'الشهر:' : 'Month:'} {selectedBill.month}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{t('bills.labels.bill')}: {selectedBill.billId}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{t('bills.labels.date')}: {formatDate(selectedBill.dueDate)}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{t('bills.labels.year')}: {selectedBill.year}</div>
+            <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>{t('bills.labels.month')}: {t(`bills.monthsMap.${String(selectedBill.month).padStart(2, '0')}` as const)}</div>
             <div className={`${darkMode ? 'mb-2 text-blue-200' : 'mb-2 text-gray-700'}`}>
-              {isAr ? 'الحالة:' : 'Status:'}{" "}
+              {t('bills.labels.status')}{": "}
               <span
                 className={
                   selectedBill.status === "paid"
@@ -701,7 +686,7 @@ const BillsPage: React.FC = () => {
                     : "text-red-600 font-bold"
                 }
               >
-                {selectedBill.status === 'paid' ? (isAr ? 'مدفوع' : 'paid') : (isAr ? 'غير مدفوع' : 'unpaid')}
+                {selectedBill.status === 'paid' ? t('home.status.paid') : t('home.status.unpaid')}
               </span>
             </div>
 
@@ -714,13 +699,13 @@ const BillsPage: React.FC = () => {
                   navigate('/pay', { state: { billId: selectedBill.billId, amount: selectedBill.amount, service: safeService } });
                 }}
               >
-                {isAr ? 'ادفع' : 'Pay'}
+                {t('bills.actions.pay')}
               </button>
               <button
                 className="px-5 py-2 rounded-xl bg-blue-500 text-white font-bold shadow hover:bg-blue-600"
                 onClick={() => handleRequestBill(selectedBill)}
               >
-                {isAr ? 'طلب فاتورة' : 'Request Bill'}
+                {t('bills.actions.requestBill')}
               </button>
             </div>
 
@@ -740,21 +725,21 @@ const BillsPage: React.FC = () => {
       >
         <button
           type="button"
-      aria-label={isAr ? 'الدعم' : 'Support'}
+      aria-label={t('common.support')}
           onClick={() => setHelpOpen(true)}
           className={`SupBtnExpand ${isAr ? 'rtl' : ''}`}
         >
           <span className="icon material-icons" aria-hidden="true">support_agent</span>
-          <span className="label"><MotionSwap switchKey={lang}>{isAr ? 'الدعم' : 'Support'}</MotionSwap></span>
+          <span className="label"><MotionSwap switchKey={lang}>{t('common.support')}</MotionSwap></span>
         </button>
         {/* Custom animated logout button */}
         <button
           type="button"
-      aria-label={isAr ? 'تسجيل الخروج' : 'Logout'}
+      aria-label={t('home.logout.text')}
           className={`LogoutBtn ${isAr ? 'rtl' : ''}`}
           onClick={() => {
             try {
-        sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: isAr ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully' }));
+        sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: t('home.logout.success') }));
             } catch {}
             localStorage.removeItem("userPhone");
             try { sessionStorage.removeItem("userPhone"); } catch {}
@@ -766,7 +751,7 @@ const BillsPage: React.FC = () => {
               <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
             </svg>
           </div>
-          <div className="text">{isAr ? 'تسجيل الخروج' : 'Logout'}</div>
+          <div className="text">{t('home.logout.text')}</div>
         </button>
       </footer>
   {/* Support modal: show WhatsApp on authenticated pages */}
@@ -775,9 +760,7 @@ const BillsPage: React.FC = () => {
     onClose={() => setHelpOpen(false)}
     showWhatsApp
     whatsappNumber={(localStorage.getItem('supportWhatsApp') || '9647700000000')}
-    whatsappMessage={isAr 
-      ? `مرحباً، أحتاج مساعدة في فواتير ${serviceNamesAr[safeService]}. الفاتورة: ${selectedBill?.billId || ''} | الهاتف: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`
-      : `Hello, I need help with my ${safeService} bills. Bill: ${selectedBill?.billId || ''} | Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`}
+    whatsappMessage={t('bills.whatsappMessage', { service: t(`home.type.${safeService}`), bill: selectedBill?.billId || '', phone: (localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '') })}
   />
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import i18n from './i18n';
 
 export type Lang = 'en' | 'ar';
 
@@ -26,6 +27,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     } catch {}
+  // Keep i18next in sync so t() works app-wide
+  try { if (i18n.language !== lang) i18n.changeLanguage(lang); } catch {}
   }, [lang]);
 
   const value = useMemo<LanguageContextValue>(() => ({

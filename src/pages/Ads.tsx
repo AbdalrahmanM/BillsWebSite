@@ -4,6 +4,7 @@ import HelpModal from '../components/HelpModal';
 import { MotionSwap } from "../components/MotionToast";
 import useIdleLogout from '../hooks/useIdleLogout';
 import { useLanguage } from "../LanguageProvider";
+import { useTranslation } from 'react-i18next';
 
 import imgMarket from '../assets/shooping.jpg';
 import imgPark from '../assets/park.png';
@@ -18,71 +19,17 @@ type Ad = {
   url?: string;
 };
 
-const ADS_EN: Ad[] = [
-  {
-    id: 'market',
-    title: 'Supermarket Offers',
-    image: imgMarket,
-    description: "Big discounts this week on groceries and household items. Don't miss out on our limited-time deals!",
-    url: 'https://example.com/ads/market',
-  },
-  {
-    id: 'park',
-    title: 'Community Park Event',
-    image: imgPark,
-    description: 'Join our family-friendly event at the community park this Friday. Games, food, and fun for everyone!',
-    url: 'https://example.com/ads/park',
-  },
-  {
-    id: 'bmw',
-    title: 'BMW New Models',
-    image: imgBmw,
-    description: 'Explore the latest BMW models with exceptional performance and design. Test-drive today.',
-    url: 'https://example.com/ads/bmw',
-  },
-  {
-    id: 'apple-vision',
-    title: 'Tech & New',
-    image: imgApple,
-    description: 'Experience the next wave of spatial computing with stunning visuals and immersive apps.',
-    url: 'https://www.apple.com/',
-  },
-];
-
-const ADS_AR: Ad[] = [
-  {
-    id: 'market',
-    title: 'عروض السوبرماركت',
-    image: imgMarket,
-    description: 'خصومات كبيرة هذا الأسبوع على المواد الغذائية ومنتجات المنزل. لا تفوّت عروضنا لفترة محدودة!',
-    url: 'https://example.com/ads/market',
-  },
-  {
-    id: 'park',
-    title: 'فعالية حديقة المجمع',
-    image: imgPark,
-    description: 'انضم إلينا في فعالية عائلية هذا الجمعة في حديقة المجمع. ألعاب وطعام ومرح للجميع!',
-    url: 'https://example.com/ads/park',
-  },
-  {
-    id: 'bmw',
-    title: 'موديلات BMW الجديدة',
-    image: imgBmw,
-    description: 'استكشف أحدث موديلات BMW بأداء وتصميم استثنائيين. احجز تجربة القيادة اليوم.',
-    url: 'https://example.com/ads/bmw',
-  },
-  {
-    id: 'apple-vision',
-    title: 'تقنية وجديد',
-    image: imgApple,
-    description: 'اختبر الجيل القادم من الحوسبة المكانية مع صور مذهلة وتطبيقات غامرة.',
-    url: 'https://www.apple.com/',
-  },
+const ADS_BASE: Array<{ id: Ad['id']; image: string; url?: string }> = [
+  { id: 'market', image: imgMarket, url: 'https://example.com/ads/market' },
+  { id: 'park', image: imgPark, url: 'https://example.com/ads/park' },
+  { id: 'bmw', image: imgBmw, url: 'https://example.com/ads/bmw' },
+  { id: 'apple-vision', image: imgApple, url: 'https://www.apple.com/' },
 ];
 
 export default function AdsPage() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const { t } = useTranslation();
   // Auto-detect dark mode to match the app
   const initialDark = useMemo(() => {
     try {
@@ -106,11 +53,20 @@ export default function AdsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const navigate = useNavigate();
-  const ADS = isAr ? ADS_AR : ADS_EN;
+  const ADS: Ad[] = useMemo(() => (
+    ADS_BASE.map(({ id, image, url }) => ({
+      id,
+      image,
+      url,
+      title: t(`ads.items.${id}.title`),
+      description: t(`ads.items.${id}.description`),
+    }))
+  // re-compute on language change
+  ), [t]);
   const selected = useMemo(() => (selectedId ? ADS.find(a => a.id === selectedId) || null : null), [selectedId, ADS]);
 
   // Auto logout on inactivity (same behavior as Home)
-  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: isAr ? 'تم تسجيل خروجك بسبب عدم النشاط' : 'You were logged out due to inactivity' });
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: t('home.idleLogoutMessage') });
 
   return (
     <div className="min-h-screen flex flex-col relative">
@@ -141,10 +97,8 @@ export default function AdsPage() {
                   </span>
                 </div>
                 <div>
-                  <div className={`text-2xl font-extrabold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{isAr ? 'الإعلانات' : 'Ads'}</div>
-                  <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>
-                    {isAr ? 'تصفح أحدث إعلانات المجمع' : 'Browse latest community ads'}
-                  </div>
+                  <div className={`text-2xl font-extrabold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{t('ads.title')}</div>
+                  <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>{t('ads.subtitle')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -152,11 +106,11 @@ export default function AdsPage() {
                 <button
                   type="button"
                   onClick={() => navigate('/home')}
-                  aria-label={isAr ? 'الرئيسية' : 'Home'}
+                  aria-label={t('common.home')}
                   className={`HomeBtnExpand ${isAr ? 'rtl' : ''}`}
                 >
                   <span className="icon material-icons" aria-hidden="true">home</span>
-                  <span className="label">{isAr ? 'الرئيسية' : 'Home'}</span>
+                  <span className="label">{t('common.home')}</span>
                 </button>
               </div>
             </div>
@@ -189,21 +143,21 @@ export default function AdsPage() {
           {/* Expandable support button (SupBtnExpand) */}
           <button
             type="button"
-            aria-label={isAr ? 'الدعم' : 'Support'}
+            aria-label={t('common.support')}
             onClick={() => setHelpOpen(true)}
             className={`SupBtnExpand ${isAr ? 'rtl' : ''}`}
           >
             <span className="icon material-icons" aria-hidden="true">support_agent</span>
-            <span className="label"><MotionSwap switchKey={lang}>{isAr ? 'الدعم' : 'Support'}</MotionSwap></span>
+            <span className="label"><MotionSwap switchKey={lang}>{t('common.support')}</MotionSwap></span>
           </button>
         {/* Custom animated logout button */}
         <button
           type="button"
-          aria-label={isAr ? 'تسجيل الخروج' : 'Logout'}
+          aria-label={t('home.logout.text')}
           className={`LogoutBtn ${isAr ? 'rtl' : ''}`}
           onClick={() => {
             try {
-              sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: isAr ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully' }));
+              sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: t('home.logout.success') }));
             } catch {}
             localStorage.removeItem('userPhone');
             try { sessionStorage.removeItem('userPhone'); } catch {}
@@ -215,7 +169,7 @@ export default function AdsPage() {
               <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
             </svg>
           </div>
-          <div className="text">{isAr ? 'تسجيل الخروج' : 'Logout'}</div>
+          <div className="text">{t('home.logout.text')}</div>
         </button>
       </footer>
 
@@ -225,7 +179,7 @@ export default function AdsPage() {
             <button
               className={`absolute top-3 right-3 z-10 rounded-full p-2 ${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-100'} shadow`}
               onClick={() => setSelectedId(null)}
-              aria-label={isAr ? 'إغلاق' : 'Close'}
+              aria-label={t('common.close')}
             >
               <span className="material-icons">close</span>
             </button>
@@ -239,7 +193,7 @@ export default function AdsPage() {
                   onClick={() => setSelectedId(null)}
                 >
                   <span className="material-icons">arrow_back</span>
-                  {isAr ? 'رجوع' : 'Back'}
+                  {t('common.back')}
                 </button>
                 {selected.url && (
                   <a
@@ -250,7 +204,7 @@ export default function AdsPage() {
                     onClick={() => setSelectedId(null)}
                   >
                     <span className="material-icons">open_in_new</span>
-                    {isAr ? 'الانتقال للإعلان' : 'Go to Ad'}
+                    {t('ads.actions.goToAd')}
                   </a>
                 )}
               </div>
@@ -265,11 +219,7 @@ export default function AdsPage() {
         onClose={() => setHelpOpen(false)}
         showWhatsApp
         whatsappNumber={(localStorage.getItem('supportWhatsApp') || '9647700000000')}
-        whatsappMessage={
-          isAr
-            ? `مرحباً، أحتاج مساعدة. الهاتف: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`
-            : `Hello, I need help. Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`
-        }
+  whatsappMessage={t('ads.whatsappMessage', { phone: (localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '') })}
       />
     </div>
   );

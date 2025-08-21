@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useLanguage } from "../LanguageProvider";
+import { useTranslation } from 'react-i18next';
 
 interface HelpModalProps {
   open: boolean;
@@ -17,7 +17,8 @@ interface HelpModalProps {
   darkMode?: boolean;
 }
 
-const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@example.com', subject = 'Billing Hub Support Request', body = 'Hello Support,\n\nI need help with ...', showWhatsApp = false, whatsappNumber, whatsappMessage = 'Hello, I need help with my bills.', darkMode: darkModeProp }) => {
+const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@example.com', subject, body, showWhatsApp = false, whatsappNumber, whatsappMessage, darkMode: darkModeProp }) => {
+  const { t } = useTranslation();
   // Auto-detect dark mode using html.bh-dark or localStorage, but allow overriding via prop
   const initialDark = useMemo(() => {
     if (typeof darkModeProp === 'boolean') return darkModeProp;
@@ -59,12 +60,16 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
     };
   }, [darkModeProp]);
 
-  const { lang } = useLanguage();
   if (!open) return null;
 
-  const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  // Localized defaults for subject/body/messages when not provided via props
+  const effectiveSubject = subject ?? t('help.email.subject');
+  const effectiveBody = body ?? t('help.email.body');
+  const effectiveWhatsappMsg = whatsappMessage ?? t('help.whatsappMessage');
+
+  const mailto = `mailto:${email}?subject=${encodeURIComponent(effectiveSubject)}&body=${encodeURIComponent(effectiveBody)}`;
   const waDigits = (whatsappNumber || '').replace(/[^0-9]/g, '');
-  const waHref = waDigits ? `https://wa.me/${waDigits}?text=${encodeURIComponent(whatsappMessage)}` : undefined;
+  const waHref = waDigits ? `https://wa.me/${waDigits}?text=${encodeURIComponent(effectiveWhatsappMsg)}` : undefined;
 
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center ${darkMode ? 'bg-black/60' : 'bg-black/40'}`}>
@@ -72,7 +77,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
         <button
           className={`absolute top-4 right-4 ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-700'}`}
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('common.close')}
         >
           <span className="material-icons">close</span>
         </button>
@@ -80,8 +85,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
         <div className="flex items-center justify-center mb-4">
           <span className={`material-icons text-5xl ${darkMode ? 'text-amber-200' : 'text-amber-700'}`}>headset_mic</span>
         </div>
-  <div className={`text-2xl font-bold text-center mb-2 ${darkMode ? 'text-blue-100' : 'text-gray-800'}`}>{lang === 'ar' ? 'نحن هنا لمساعدتك' : "We're Here for You"}</div>
-  <div className={`text-center mb-6 ${darkMode ? 'text-blue-200' : 'text-gray-600'}`}>{lang === 'ar' ? 'فريق الدعم جاهز لمساعدتك في أي وقت.' : 'Our support team is here to assist you at any time.'}</div>
+  <div className={`text-2xl font-bold text-center mb-2 ${darkMode ? 'text-blue-100' : 'text-gray-800'}`}>{t('help.title')}</div>
+  <div className={`text-center mb-6 ${darkMode ? 'text-blue-200' : 'text-gray-600'}`}>{t('help.subtitle')}</div>
 
         <div className="flex flex-col gap-3">
           <a
@@ -90,7 +95,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
             onClick={onClose}
           >
             <span className="material-icons">mail</span>
-            {lang === 'ar' ? 'التواصل عبر البريد' : 'Contact via Email'}
+            {t('help.actions.email')}
           </a>
           {showWhatsApp && waHref && (
             <a
@@ -101,7 +106,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ open, onClose, email = 'support@e
               onClick={onClose}
             >
               <span className="material-icons">chat</span>
-              {lang === 'ar' ? 'التواصل عبر واتساب' : 'Contact via WhatsApp'}
+              {t('help.actions.whatsapp')}
             </a>
           )}
         </div>

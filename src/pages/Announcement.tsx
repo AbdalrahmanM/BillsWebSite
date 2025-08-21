@@ -4,12 +4,14 @@ import HelpModal from '../components/HelpModal';
 import { MotionSwap } from "../components/MotionToast";
 import useIdleLogout from '../hooks/useIdleLogout';
 import { useLanguage } from "../LanguageProvider";
+import { useTranslation } from 'react-i18next';
 
 export default function AnnouncementPage() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const { t } = useTranslation();
   // Auto logout on inactivity (align with Home)
-  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: isAr ? 'تم تسجيل خروجك بسبب عدم النشاط' : 'You were logged out due to inactivity' });
+  useIdleLogout({ timeoutMs: 3 * 60 * 1000, enabled: true, message: t('home.idleLogoutMessage') });
   const initialDark = useMemo(() => {
     try {
       if (document.documentElement.classList.contains('bh-dark')) return true;
@@ -143,18 +145,14 @@ export default function AnnouncementPage() {
             <div className="relative z-10 flex items-center justify-between p-6">
               <div className="flex items-center gap-4">
                 <div>
-                  <div className={`text-2xl font-extrabold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>
-                    {isAr ? 'الإعلانات' : 'Announcement'}
-                  </div>
-                  <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>
-                    {isAr ? 'يرجى الانتباه' : 'Attention Please'}
-                  </div>
+                    <div className={`text-2xl font-extrabold ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>{t('announcement.title')}</div>
+                    <div className={`text-sm ${darkMode ? 'text-blue-300' : 'text-gray-500'}`}>{t('announcement.subtitle')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => navigate('/home')} aria-label={isAr ? 'الرئيسية' : 'Home'} className={`HomeBtnExpand ${isAr ? 'rtl' : ''}`}>
+                  <button type="button" onClick={() => navigate('/home')} aria-label={t('common.home')} className={`HomeBtnExpand ${isAr ? 'rtl' : ''}`}>
                   <span className="icon material-icons" aria-hidden="true">home</span>
-                  <span className="label">{isAr ? 'الرئيسية' : 'Home'}</span>
+                    <span className="label">{t('common.home')}</span>
                 </button>
               </div>
             </div>
@@ -171,12 +169,8 @@ export default function AnnouncementPage() {
           <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br from-rose-200/40 to-rose-400/20" />
           <div className="relative flex items-start gap-4">
             <div>
-              <h2 className="text-xl font-extrabold tracking-tight mb-1">{isAr ? 'إشعار هام' : 'Important Notice'}</h2>
-              <p className={`${darkMode ? 'text-blue-200' : 'text-gray-600'}`}>
-                {isAr
-                  ? 'يرجى الانتباه: هذا إعلان مهم لجميع المستخدمين. ترقّبوا التحديثات وتأكدوا من أن معلومات التواصل لديكم محدّثة.'
-                  : 'Attention Please: This is an important announcement for all users. Stay tuned for updates and make sure your contact information is up-to-date.'}
-              </p>
+              <h2 className="text-xl font-extrabold tracking-tight mb-1">{t('home.banner.announcement')}</h2>
+              <p className={`${darkMode ? 'text-blue-200' : 'text-gray-600'}`}>{t('announcement.highlight')}</p>
             </div>
           </div>
         </div>
@@ -193,11 +187,11 @@ export default function AnnouncementPage() {
             <img src={details.maintenance.bg.slice(5, -2)} alt={isAr ? 'صيانة' : 'Maintenance'} className="w-full h-40 object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute top-3 right-3">
-              <span className="rounded-xl px-2 py-1 text-xs font-semibold bg-white/90 text-gray-700 shadow">{isAr ? 'مجدول' : 'Scheduled'}</span>
+              <span className="rounded-xl px-2 py-1 text-xs font-semibold bg-white/90 text-gray-700 shadow">{t('announcement.tags.scheduled')}</span>
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <h3 className="text-white font-bold text-lg drop-shadow">{isAr ? 'إشعار صيانة' : 'Maintenance Notice'}</h3>
-              <p className="text-white/80 text-sm">{isAr ? 'سيكون نظامنا قيد الصيانة في عطلة نهاية الأسبوع' : 'Our system will be under maintenance this weekend'}</p>
+              <h3 className="text-white font-bold text-lg drop-shadow">{details.maintenance.title}</h3>
+              <p className="text-white/80 text-sm">{details.maintenance.points[0]}</p>
             </div>
           </button>
 
@@ -211,11 +205,11 @@ export default function AnnouncementPage() {
             <img src={details.payment.bg.slice(5, -2)} alt={isAr ? 'خيار دفع جديد' : 'New Payment Option'} className="w-full h-40 object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute top-3 right-3">
-              <span className="rounded-xl px-2 py-1 text-xs font-semibold bg-white/90 text-gray-700 shadow">{isAr ? 'جديد' : 'New'}</span>
+              <span className="rounded-xl px-2 py-1 text-xs font-semibold bg-white/90 text-gray-700 shadow">{t('announcement.tags.new')}</span>
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <h3 className="text-white font-bold text-lg drop-shadow">{isAr ? 'خيار دفع جديد' : 'New Payment Option'}</h3>
-              <p className="text-white/80 text-sm">{isAr ? 'يمكنك الآن دفع فواتيرك باستخدام Apple Pay / Google Pay' : 'You can now pay your bills using Apple Pay / Google Pay'}</p>
+              <h3 className="text-white font-bold text-lg drop-shadow">{details.payment.title}</h3>
+              <p className="text-white/80 text-sm">{details.payment.points[0]}</p>
             </div>
           </button>
 
@@ -229,11 +223,11 @@ export default function AnnouncementPage() {
             <img src={details.sales.bg.slice(5, -2)} alt={isAr ? 'عرض خاص' : 'Special Offer'} className="w-full h-40 object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute top-3 right-3">
-              <span className="rounded-xl px-2 py-1 text-xs font-semibold bg-white/90 text-gray-700 shadow">{isAr ? 'عرض' : 'Promo'}</span>
+              <span className="rounded-xl px-2 py-1 text-xs font-semibold bg-white/90 text-gray-700 shadow">{t('announcement.tags.promo')}</span>
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <h3 className="text-white font-bold text-lg drop-shadow">{isAr ? 'عرض خاص!' : 'Special Offer!'}</h3>
-              <p className="text-white/80 text-sm">{isAr ? 'احصل على خصم 20% على دفعتك القادمة.' : 'Get 20% off your next bill payment.'}</p>
+              <h3 className="text-white font-bold text-lg drop-shadow">{details.sales.title}</h3>
+              <p className="text-white/80 text-sm">{details.sales.points[0]}</p>
             </div>
           </button>
 
@@ -247,8 +241,8 @@ export default function AnnouncementPage() {
             <img src={details.holiday.bg.slice(5, -2)} alt={isAr ? 'تنبيه عطلة' : 'Holiday Alert'} className="w-full h-40 object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
-              <h3 className="text-white font-bold text-lg drop-shadow">{isAr ? 'تنبيه عطلة' : 'Holiday Alert'}</h3>
-              <p className="text-white/80 text-sm">{isAr ? 'سيتم إغلاق المكتب في 4 يوليو.' : 'Office will be closed on July 4th.'}</p>
+              <h3 className="text-white font-bold text-lg drop-shadow">{details.holiday.title}</h3>
+              <p className="text-white/80 text-sm">{details.holiday.points[0]}</p>
             </div>
           </button>
         </div>
@@ -269,7 +263,7 @@ export default function AnnouncementPage() {
             <button
               className={`absolute top-3 right-3 z-10 rounded-full p-2 ${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-100'} shadow`}
               onClick={() => setActive(null)}
-              aria-label={isAr ? 'إغلاق' : 'Close'}
+              aria-label={t('common.close')}
             >
               <span className="material-icons">close</span>
             </button>
@@ -285,7 +279,7 @@ export default function AnnouncementPage() {
                   onClick={() => setActive(null)}
                 >
                   <span className="material-icons">arrow_back</span>
-                  {isAr ? 'رجوع' : 'Back'}
+                  {t('common.back')}
                 </button>
               </div>
             </div>
@@ -293,23 +287,23 @@ export default function AnnouncementPage() {
         </div>
       )}
 
-      <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
-  <button type="button" aria-label={isAr ? 'الدعم' : 'Support'} onClick={() => setHelpOpen(true)} className={`SupBtnExpand ${isAr ? 'rtl' : ''}`}>
+    <footer className={`mt-auto px-8 py-4 flex items-center justify-between rounded-t-2xl shadow-inner ${darkMode ? 'bg-gray-900' : ''}`} style={darkMode ? { boxShadow: '0 2px 8px rgba(0,0,0,0.10)' } : { background: '#f7f6f2' }}>
+  <button type="button" aria-label={t('common.support')} onClick={() => setHelpOpen(true)} className={`SupBtnExpand ${isAr ? 'rtl' : ''}`}>
           <span className="icon material-icons" aria-hidden="true">support_agent</span>
-          <span className="label"><MotionSwap switchKey={lang}>{isAr ? 'الدعم' : 'Support'}</MotionSwap></span>
+      <span className="label"><MotionSwap switchKey={lang}>{t('common.support')}</MotionSwap></span>
         </button>
         <button
           type="button"
-          aria-label={isAr ? 'تسجيل الخروج' : 'Logout'}
+      aria-label={t('home.logout.text')}
           className={`LogoutBtn ${isAr ? 'rtl' : ''}`}
-          onClick={() => { try { sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: isAr ? 'تم تسجيل الخروج بنجاح' : 'Logged out successfully' })); } catch {}; localStorage.removeItem('userPhone'); try { sessionStorage.removeItem('userPhone'); } catch {}; navigate('/'); }}
+      onClick={() => { try { sessionStorage.setItem('flashToast', JSON.stringify({ type: 'success', message: t('home.logout.success') })); } catch {}; localStorage.removeItem('userPhone'); try { sessionStorage.removeItem('userPhone'); } catch {}; navigate('/'); }}
         >
           <div className="sign">
             <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <path d="M377.9 105.9L500.7 228.7c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9c-18.7 0-33.9-15.2-33.9-33.9l0-62.1-128 0c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l128 0 0-62.1c0-18.7 15.2-33.9 33.9-33.9c9 0 17.6 3.6 24 9.9zM160 96L96 96c-17.7 0-32 14.3-32 32l0 256c0 17.7 14.3 32 32 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c-53 0-96-43-96-96L0 128C0 75 43 32 96 32l64 0c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
             </svg>
           </div>
-          <div className="text">{isAr ? 'تسجيل الخروج' : 'Logout'}</div>
+      <div className="text">{t('home.logout.text')}</div>
         </button>
       </footer>
 
@@ -318,9 +312,7 @@ export default function AnnouncementPage() {
         onClose={() => setHelpOpen(false)}
         showWhatsApp
         whatsappNumber={(localStorage.getItem('supportWhatsApp') || '9647700000000')}
-        whatsappMessage={isAr
-          ? `مرحباً، أحتاج مساعدة. الهاتف: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`
-          : `Hello, I need help. Phone: ${(localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '')}`}
+        whatsappMessage={t('announcement.whatsappMessage', { phone: (localStorage.getItem('userPhone') || sessionStorage.getItem('userPhone') || '') })}
       />
     </div>
   );
