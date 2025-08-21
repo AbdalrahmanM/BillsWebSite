@@ -61,19 +61,16 @@ const Login = () => {
 
 	return (
 		<div className="min-h-screen flex flex-col bg-cover bg-center relative" style={{ backgroundImage: "url('/background/login-bg.jpg')" }}>
-			{/* طبقة زجاجية مع تدرج لوني */}
 			<div className="absolute inset-0 bg-gradient-to-br from-blue-200/40 via-white/30 to-blue-400/30 backdrop-blur-xl z-0" />
-				{/* منطقة المحتوى الأساسية في الوسط */}
 				<div className="relative z-10 flex-1 w-full flex items-center justify-center mb-4">
 					<div className="relative z-10 flex flex-col items-center w-full max-w-md px-10 py-14 rounded-3xl shadow-2xl bg-white/30 border border-blue-200 animate-fade-in-slow" style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)' }}>
-						{/* Language toggle inside the card */}
 						<button
 							className={`absolute top-4 ${lang === 'ar' ? 'left-4' : 'right-4'} z-20 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-white/80 backdrop-blur border border-white/60 shadow hover:bg-white transition`}
 							onClick={() => { toggleLang(); }}
 							aria-label={t('common.toggleLanguage')}
 						>
 							<MotionSwap switchKey={i18n.language}>
-								{lang === 'ar' ? 'AR' : 'EN'}
+								{lang === 'ar' ? 'EN' : 'AR'}
 							</MotionSwap>
 						</button>
 				{/* صورة الشعار مستطيلة بحواف ناعمة وظل قوي وحجم أكبر جداً جداً */}
